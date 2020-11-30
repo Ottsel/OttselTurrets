@@ -1,0 +1,130 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"laser_turret_side": "ottselturrets:blocks/laser_turret_side",
+		"particle": "ottselturrets:blocks/laser_turret_cannon",
+		"laser_turret_cannon": "ottselturrets:blocks/laser_turret_cannon",
+		"laser_turret_plate": "ottselturrets:blocks/laser_turret_plate",
+		"laser_turret_bottom": "ottselturrets:blocks/laser_turret_bottom",
+		"laser_turret_cannon_bottom": "ottselturrets:blocks/laser_turret_cannon_bottom",
+		"laser_turret_base_side": "ottselturrets:blocks/laser_turret_base_side",
+		"laser_turret_base": "ottselturrets:blocks/laser_turret_base"
+	},
+	"elements": [
+		{
+			"from": [2, 0, 2],
+			"to": [14, 2, 14],
+			"shade": false,
+			"faces": {
+				"north": {"uv": [0, 0, 12, 2], "texture": "#laser_turret_base_side"},
+				"east": {"uv": [0, 0, 12, 2], "texture": "#laser_turret_base_side"},
+				"south": {"uv": [0, 0, 12, 2], "texture": "#laser_turret_base_side"},
+				"west": {"uv": [0, 0, 12, 2], "texture": "#laser_turret_base_side"},
+				"up": {"uv": [0, 0, 12, 12], "texture": "#laser_turret_base"},
+				"down": {"uv": [0, 0, 12, 12], "texture": "#laser_turret_bottom"}
+			}
+		},
+		{
+			"from": [4, 2, 4],
+			"to": [12, 3, 12],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 2, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 8, 1], "texture": "#laser_turret_plate"},
+				"east": {"uv": [0, 0, 8, 1], "texture": "#laser_turret_plate"},
+				"south": {"uv": [0, 0, 8, 1], "texture": "#laser_turret_plate"},
+				"west": {"uv": [0, 0, 8, 1], "texture": "#laser_turret_plate"},
+				"up": {"uv": [0, 0, 8, 8], "texture": "#laser_turret_plate"},
+				"down": {"uv": [0, 0, 8, 8], "texture": "#laser_turret_bottom"}
+			}
+		},
+		{
+			"from": [6, 3, 9],
+			"to": [10, 8, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 2, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 4, 5], "texture": "#laser_turret_side"},
+				"east": {"uv": [0, 0, 1, 5], "texture": "#laser_turret_side"},
+				"south": {"uv": [0, 0, 4, 5], "texture": "#laser_turret_side"},
+				"west": {"uv": [0, 0, 1, 5], "texture": "#laser_turret_side"},
+				"up": {"uv": [0, 0, 4, 1], "texture": "#laser_turret_side"},
+				"down": {"uv": [0, 0, 4, 1], "texture": "#laser_turret_bottom"}
+			}
+		},
+		{
+			"from": [6, 3, 6],
+			"to": [10, 8, 7],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 2, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 4, 5], "texture": "#laser_turret_side"},
+				"east": {"uv": [0, 0, 1, 5], "texture": "#laser_turret_side"},
+				"south": {"uv": [0, 0, 4, 5], "texture": "#laser_turret_side"},
+				"west": {"uv": [0, 0, 1, 5], "texture": "#laser_turret_side"},
+				"up": {"uv": [0, 0, 4, 1], "texture": "#laser_turret_side"},
+				"down": {"uv": [0, 0, 4, 1], "texture": "#laser_turret_bottom"}
+			}
+		},
+		{
+			"from": [7, 5, 7],
+			"to": [9, 14, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 2, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 2, 9], "texture": "#laser_turret_cannon"},
+				"east": {"uv": [0, 0, 2, 9], "texture": "#laser_turret_cannon"},
+				"south": {"uv": [0, 0, 2, 9], "texture": "#laser_turret_cannon"},
+				"west": {"uv": [0, 0, 2, 9], "texture": "#laser_turret_cannon"},
+				"up": {"uv": [0, 0, 2, 2], "texture": "#laser_turret_cannon"},
+				"down": {"uv": [0, 0, 2, 2], "texture": "#laser_turret_cannon_bottom"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [0, 45, 0],
+			"translation": [0, 1.75, -0.25],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [0, 45, 0],
+			"translation": [0, 1.75, -0.25],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"firstperson_righthand": {
+			"rotation": [10, 25, 0],
+			"translation": [0, 3.25, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"firstperson_lefthand": {
+			"rotation": [10, 25, 0],
+			"translation": [0, 3.25, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"ground": {
+			"translation": [0, 2, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"gui": {
+			"rotation": [45, 45, 0],
+			"translation": [0, 2, 0],
+			"scale": [0.75, 0.75, 0.75]
+		}
+	},
+	"groups": [
+		{
+			"name": "base",
+			"origin": [8, 8, 8],
+			"children": [0,
+				{
+					"name": "plate",
+					"origin": [16, 11, 16],
+					"children": [1, 2, 3,
+						{
+							"name": "cannon",
+							"origin": [16, 11, 18],
+							"children": [4]
+						}
+					]
+				}
+			]
+		}
+	]
+}

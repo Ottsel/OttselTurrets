@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=up": { "model": "ottselturrets:block/laser_turret" },
+    "facing=down": { "model": "ottselturrets:block/laser_turret", "x": 180 },
+    "facing=east": { "model": "ottselturrets:block/laser_turret", "y": 90, "x": 90 },
+    "facing=south": { "model": "ottselturrets:block/laser_turret", "y": 180, "x": 90 },
+    "facing=west": { "model": "ottselturrets:block/laser_turret", "y": 270, "x": 90 },
+    "facing=north": { "model": "ottselturrets:block/laser_turret", "y": 0, "x": 90 }
+  }
+}
