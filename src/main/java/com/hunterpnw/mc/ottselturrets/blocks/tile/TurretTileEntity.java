@@ -3,18 +3,23 @@ package com.hunterpnw.mc.ottselturrets.blocks.tile;
 import com.hunterpnw.mc.ottselturrets.OttselTurrets;
 import com.hunterpnw.mc.ottselturrets.TurretType;
 import com.hunterpnw.mc.ottselturrets.registry.TileRegistry;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
+import software.bernie.geckolib3.core.event.ParticleKeyFrameEvent;
+import software.bernie.geckolib3.core.event.SoundKeyframeEvent;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
@@ -27,7 +32,7 @@ import static com.hunterpnw.mc.ottselturrets.TurretType.getTurretTypeFromInt;
 
 public class TurretTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable {
 
-    private final AnimationFactory manager = new AnimationFactory(this);
+    private final AnimationFactory factory = new AnimationFactory(this);
     public TurretType turretType;
 
     public TurretTileEntity() {
@@ -48,8 +53,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     {
         AnimationController controller = event.getController();
         controller.transitionLengthTicks = 0;
-
-            controller.setAnimation(new AnimationBuilder().addAnimation("animation.ottselturrets.test", true));
+        controller.setAnimation(new AnimationBuilder().addAnimation("animation.ottselturrets.test", true));
 
         return PlayState.CONTINUE;
     }
@@ -62,7 +66,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     @Override
     public AnimationFactory getFactory()
     {
-        return this.manager;
+        return this.factory;
     }
 
     @Override
@@ -74,6 +78,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     @Override
     public void read(CompoundNBT nbt){
         turretType = getTurretTypeFromInt(nbt.getInt("TurretType"));
+        //OttselTurrets.LOGGER.debug("Read turret type: "+turretType);
         super.read(nbt);
     }
 

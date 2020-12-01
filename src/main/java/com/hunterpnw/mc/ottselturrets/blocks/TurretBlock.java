@@ -24,10 +24,10 @@ public class TurretBlock extends DirectionalBlock {
     //Collision boxes for each orientation of the turret.
     protected static final VoxelShape TURRET_UP_AABB = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 8.0D, 14.0D);
     protected static final VoxelShape TURRET_DOWN_AABB = Block.makeCuboidShape(2.0D, 8.0D, 2.0D, 14.0D, 16.0D, 14.0D);
-    protected static final VoxelShape TURRET_E_AABB = Block.makeCuboidShape(0.0D, 2.0D, 2.0D, 8.0D, 14.0D, 14.0D);
-    protected static final VoxelShape TURRET_W_AABB = Block.makeCuboidShape(8.0D, 2.0D, 2.0D, 16.0D, 14.0D, 14.0D);
     protected static final VoxelShape TURRET_N_AABB = Block.makeCuboidShape(2.0D, 2.0D, 8.0D, 14.0D, 14.0D, 16.0D);
     protected static final VoxelShape TURRET_S_AABB = Block.makeCuboidShape(2.0D, 2.0D, 0.0D, 14.0D, 14.0D, 8.0D);
+    protected static final VoxelShape TURRET_E_AABB = Block.makeCuboidShape(0.0D, 2.0D, 2.0D, 8.0D, 14.0D, 14.0D);
+    protected static final VoxelShape TURRET_W_AABB = Block.makeCuboidShape(8.0D, 2.0D, 2.0D, 16.0D, 14.0D, 14.0D);
 
     //Damage type dealt by this turret.
     public TurretType turretType;

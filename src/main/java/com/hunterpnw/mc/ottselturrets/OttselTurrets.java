@@ -1,9 +1,6 @@
 package com.hunterpnw.mc.ottselturrets;
 
-import com.hunterpnw.mc.ottselturrets.registry.BlockRegistry;
-import com.hunterpnw.mc.ottselturrets.registry.ItemRegistry;
-import com.hunterpnw.mc.ottselturrets.registry.RendererRegistry;
-import com.hunterpnw.mc.ottselturrets.registry.TileRegistry;
+import com.hunterpnw.mc.ottselturrets.registry.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
