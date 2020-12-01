@@ -116,4 +116,14 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         t++;
     }
 
+    @Override
+    @Nonnull
+    public CompoundNBT getUpdateTag() {
+        return write(new CompoundNBT());
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundNBT tag) {
+        turretType = getTurretTypeFromInt(tag.getInt("TurretType"));
+    }
 }

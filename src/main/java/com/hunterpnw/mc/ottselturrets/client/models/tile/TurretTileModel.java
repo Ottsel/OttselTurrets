@@ -18,10 +18,7 @@ public class TurretTileModel extends AnimatedGeoModel<TurretTileEntity>
     @Override
     public ResourceLocation getTextureLocation(TurretTileEntity tileEntity)
     {
-        //TODO Network the turretType
-        //OttselTurrets.LOGGER.debug("Got turret type: "+tileEntity);
-        //return getTextureFromType(tileEntity.turretType);
-        return new ResourceLocation(OttselTurrets.MOD_ID,"textures/blocks/laser_turret.png");
+        return getTextureFromType(tileEntity.turretType);
     }
 
     @Override
