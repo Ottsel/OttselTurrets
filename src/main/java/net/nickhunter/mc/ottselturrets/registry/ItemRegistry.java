@@ -1,8 +1,8 @@
-package com.hunterpnw.mc.ottselturrets.registry;
+package net.nickhunter.mc.ottselturrets.registry;
 
-import com.hunterpnw.mc.ottselturrets.OttselTurrets;
-import com.hunterpnw.mc.ottselturrets.TurretType;
-import com.hunterpnw.mc.ottselturrets.items.TurretBlockItem;
+import net.nickhunter.mc.ottselturrets.OttselTurrets;
+import net.nickhunter.mc.ottselturrets.TurretType;
+import net.nickhunter.mc.ottselturrets.items.TurretBlockItem;
 import net.minecraft.item.Item;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;

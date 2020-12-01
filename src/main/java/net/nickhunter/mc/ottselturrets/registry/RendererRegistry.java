@@ -1,6 +1,6 @@
-package com.hunterpnw.mc.ottselturrets.registry;
+package net.nickhunter.mc.ottselturrets.registry;
 
-import com.hunterpnw.mc.ottselturrets.client.renderers.tile.TurretTileRenderer;
+import net.nickhunter.mc.ottselturrets.client.renderers.tile.TurretTileRenderer;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 public class RendererRegistry {

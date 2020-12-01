@@ -1,7 +1,7 @@
-package com.hunterpnw.mc.ottselturrets.blocks;
+package net.nickhunter.mc.ottselturrets.blocks;
 
-import com.hunterpnw.mc.ottselturrets.TurretType;
-import com.hunterpnw.mc.ottselturrets.blocks.tile.TurretTileEntity;
+import net.nickhunter.mc.ottselturrets.TurretType;
+import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;

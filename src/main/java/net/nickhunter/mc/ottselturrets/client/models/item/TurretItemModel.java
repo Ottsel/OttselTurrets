@@ -1,11 +1,11 @@
-package com.hunterpnw.mc.ottselturrets.client.models.item;
+package net.nickhunter.mc.ottselturrets.client.models.item;
 
-import com.hunterpnw.mc.ottselturrets.OttselTurrets;
-import com.hunterpnw.mc.ottselturrets.items.TurretBlockItem;
+import net.nickhunter.mc.ottselturrets.OttselTurrets;
+import net.nickhunter.mc.ottselturrets.items.TurretBlockItem;
 import net.minecraft.util.ResourceLocation;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 
-import static com.hunterpnw.mc.ottselturrets.TurretType.getTextureFromType;
+import static net.nickhunter.mc.ottselturrets.TurretType.getTextureFromType;
 
 public class TurretItemModel extends AnimatedGeoModel<TurretBlockItem>
 {

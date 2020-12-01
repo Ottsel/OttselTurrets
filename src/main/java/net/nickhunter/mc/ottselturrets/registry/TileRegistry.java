@@ -1,7 +1,7 @@
-package com.hunterpnw.mc.ottselturrets.registry;
+package net.nickhunter.mc.ottselturrets.registry;
 
-import com.hunterpnw.mc.ottselturrets.OttselTurrets;
-import com.hunterpnw.mc.ottselturrets.blocks.tile.TurretTileEntity;
+import net.nickhunter.mc.ottselturrets.OttselTurrets;
+import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraftforge.fml.RegistryObject;

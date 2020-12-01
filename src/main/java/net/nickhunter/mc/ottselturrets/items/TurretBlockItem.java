@@ -1,8 +1,8 @@
-package com.hunterpnw.mc.ottselturrets.items;
+package net.nickhunter.mc.ottselturrets.items;
 
-import com.hunterpnw.mc.ottselturrets.TurretType;
-import com.hunterpnw.mc.ottselturrets.client.renderers.item.TurretItemRenderer;
-import com.hunterpnw.mc.ottselturrets.registry.ItemGroupRegistry;
+import net.nickhunter.mc.ottselturrets.TurretType;
+import net.nickhunter.mc.ottselturrets.client.renderers.item.TurretItemRenderer;
+import net.nickhunter.mc.ottselturrets.registry.ItemGroupRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;

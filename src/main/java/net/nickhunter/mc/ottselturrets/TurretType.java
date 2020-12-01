@@ -1,4 +1,4 @@
-package com.hunterpnw.mc.ottselturrets;
+package net.nickhunter.mc.ottselturrets;
 
 import net.minecraft.util.ResourceLocation;
 

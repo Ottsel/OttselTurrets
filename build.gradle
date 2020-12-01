@@ -14,7 +14,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = '0.1.0a'
-group = 'com.hunterpnw.mc.ottselturrets' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = 'net.nickhunter.mc.ottselturrets' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'ottselturrets'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.

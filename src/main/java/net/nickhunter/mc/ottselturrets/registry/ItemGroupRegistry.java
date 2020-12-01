@@ -1,4 +1,4 @@
-package com.hunterpnw.mc.ottselturrets.registry;
+package net.nickhunter.mc.ottselturrets.registry;
 
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;

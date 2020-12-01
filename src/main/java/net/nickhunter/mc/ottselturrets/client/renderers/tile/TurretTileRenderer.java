@@ -1,7 +1,7 @@
-package com.hunterpnw.mc.ottselturrets.client.renderers.tile;
+package net.nickhunter.mc.ottselturrets.client.renderers.tile;
 
-import com.hunterpnw.mc.ottselturrets.client.models.tile.TurretTileModel;
-import com.hunterpnw.mc.ottselturrets.blocks.tile.TurretTileEntity;
+import net.nickhunter.mc.ottselturrets.client.models.tile.TurretTileModel;
+import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;

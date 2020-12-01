@@ -1,8 +1,8 @@
-package com.hunterpnw.mc.ottselturrets.blocks.tile;
+package net.nickhunter.mc.ottselturrets.blocks.tile;
 
-import com.hunterpnw.mc.ottselturrets.OttselTurrets;
-import com.hunterpnw.mc.ottselturrets.TurretType;
-import com.hunterpnw.mc.ottselturrets.registry.TileRegistry;
+import net.nickhunter.mc.ottselturrets.OttselTurrets;
+import net.nickhunter.mc.ottselturrets.TurretType;
+import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -22,7 +22,7 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static com.hunterpnw.mc.ottselturrets.TurretType.getTurretTypeFromInt;
+import static net.nickhunter.mc.ottselturrets.TurretType.getTurretTypeFromInt;
 
 
 public class TurretTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable {
