@@ -46,7 +46,6 @@ public class TurretBlock extends DirectionalBlock {
 
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-
         return new TurretTileEntity(turretType);
     }
 

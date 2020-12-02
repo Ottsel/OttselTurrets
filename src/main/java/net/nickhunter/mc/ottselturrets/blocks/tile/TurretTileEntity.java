@@ -9,9 +9,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
-import net.nickhunter.mc.ottselturrets.OttselTurrets;
+import net.minecraft.util.math.Vec3d;
 import net.nickhunter.mc.ottselturrets.TurretType;
+import net.nickhunter.mc.ottselturrets.blocks.TurretBlock;
 import net.nickhunter.mc.ottselturrets.entities.DartEntity;
 import net.nickhunter.mc.ottselturrets.registry.EntityRegistry;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
@@ -96,10 +96,13 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         // Create bounding box.
         int range = 10;
 
-        double x = this.pos.getX() - range;
-        double y = this.pos.getY() - range;
-        double z = this.pos.getZ() - range;
-        AxisAlignedBB area = new AxisAlignedBB(x, y, z, x + range * 2, y + range * 2, z + range * 2);
+        BlockPos pos = this.pos;
+        Vec3d dPos = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+
+        double x1 = pos.getX() - range;
+        double y1 = pos.getY() - range;
+        double z1 = pos.getZ() - range;
+        AxisAlignedBB area = new AxisAlignedBB(x1, y1, z1, x1 + range * 2, y1 + range * 2, z1 + range * 2);
 
         // Find entities around this tile entity.
         List<LivingEntity> entities = null;
@@ -109,27 +112,49 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
         if (entities != null) {
             double shortestDist = range;
-            LivingEntity shortest = null;
+            LivingEntity target = null;
             for (LivingEntity entity : entities) {
-                BlockPos pos = entity.getPosition();
-                double dist = pos.distanceSq(this.pos);
+                Vec3d entityPos = entity.getPositionVec();
+                double dist = entityPos.distanceTo(dPos);
                 if (dist < shortestDist) {
                     shortestDist = dist;
-                    shortest = entity;
+                    target = entity;
                 }
             }
-            if (shortest != null) {
-                OttselTurrets.LOGGER.debug(
-                        shortest.getEntityString() +
-                                " " + pos.getX() +
-                                " " + pos.getY() +
-                                " " + pos.getZ() +
-                                " Turret type: " + turretType);
-                DartEntity dart = EntityRegistry.DART.get().spawn(world, null, null, null, this.pos.add(new Vec3i(0, 1, 0)), SpawnReason.DISPENSER, false, false);
-                dart.setMotion(0,0.2,0);
+            if (target != null && target.isAlive()) {
+                Vec3d targetPos = target.getPositionVec();
+
+                DartEntity dart = EntityRegistry.DART.get().spawn(
+                        world,
+                        null,
+                        null,
+                        null,
+                        new BlockPos(pos.getX(), pos.getY(), pos.getZ()).add(getDartSpawnOffset()),
+                        SpawnReason.DISPENSER,
+                        false,
+                        false);
+                dart.shootAt(targetPos, 1);
             }
         }
         t++;
+    }
+
+    public BlockPos getDartSpawnOffset() {
+        switch (getBlockState().get(TurretBlock.FACING)) {
+            case NORTH:
+                return new BlockPos(0, 0, -1);
+            case SOUTH:
+                return new BlockPos(0, 0, 1);
+            case EAST:
+                return new BlockPos(1, 0, 0);
+            case WEST:
+                return new BlockPos(-1, 0, 0);
+            case DOWN:
+                return new BlockPos(0, -1, 0);
+            case UP:
+            default:
+                return new BlockPos(0, 1, 0);
+        }
     }
 
     @Override
