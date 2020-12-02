@@ -14,8 +14,8 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 public class TurretBlockItem extends BlockItem implements IAnimatable {
-    public AnimationFactory factory = new AnimationFactory(this);
-    public TurretType turretType;
+    public final AnimationFactory factory = new AnimationFactory(this);
+    public final TurretType turretType;
 
     public TurretBlockItem(Block blockTurret, TurretType turretType) {
         super(blockTurret, new Item.Properties().group(ItemGroupRegistry.MAIN).setISTER(() -> TurretItemRenderer::new));

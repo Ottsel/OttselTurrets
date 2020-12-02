@@ -15,7 +15,7 @@ public class TileRegistry {
 
     public static void init(){ TILE_ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus()); }
 
-    public static RegistryObject<TileEntityType<TurretTileEntity>> TURRET = TILE_ENTITIES.register("laser_turret", () -> TileEntityType.Builder.create(
+    public static final RegistryObject<TileEntityType<TurretTileEntity>> TURRET = TILE_ENTITIES.register("turret", () -> TileEntityType.Builder.create(
             TurretTileEntity::new,
             new Block[]{
                     BlockRegistry.LASER_TURRET.get()}

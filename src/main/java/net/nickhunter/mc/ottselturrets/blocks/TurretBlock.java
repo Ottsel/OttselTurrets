@@ -30,7 +30,7 @@ public class TurretBlock extends DirectionalBlock {
     protected static final VoxelShape TURRET_W_AABB = Block.makeCuboidShape(8.0D, 2.0D, 2.0D, 16.0D, 14.0D, 14.0D);
 
     //Damage type dealt by this turret.
-    public TurretType turretType;
+    public final TurretType turretType;
 
     public TurretBlock(TurretType turretType) {
         super(Properties.create(Material.IRON)
