@@ -1,0 +1,14 @@
+{
+  "laser_bolt": {
+    "category": "block",
+    "sounds": [
+      "ottselturrets:laser_bolt"
+    ]
+  },
+  "laser_charge": {
+    "category": "block",
+    "sounds": [
+      "ottselturrets:laser_charge"
+    ]
+  }
+}

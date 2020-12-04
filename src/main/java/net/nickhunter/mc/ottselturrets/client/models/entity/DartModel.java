@@ -1,33 +1,23 @@
-// Made with Blockbench 3.7.4
-// Exported for Minecraft version 1.15
-// Paste this class into your mod and generate all required imports
 package net.nickhunter.mc.ottselturrets.client.models.entity;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.client.renderer.entity.model.EntityModel;
-import net.minecraft.client.renderer.model.ModelRenderer;
+import net.minecraft.util.ResourceLocation;
+import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.entities.DartEntity;
+import software.bernie.geckolib3.model.AnimatedGeoModel;
 
-public class DartModel extends EntityModel<DartEntity> {
-	private final ModelRenderer modelRenderer;
+public class DartModel extends AnimatedGeoModel<DartEntity> {
+    @Override
+    public ResourceLocation getModelLocation(DartEntity entity) {
+        return new ResourceLocation(OttselTurrets.MOD_ID, "geo/entity/laser_dart.geo.json");
+    }
 
-	public DartModel() {
-		textureWidth = 16;
-		textureHeight = 16;
+    @Override
+    public ResourceLocation getTextureLocation(DartEntity entity) {
+        return new ResourceLocation(OttselTurrets.MOD_ID, "textures/model/entity/laser_dart.png");
+    }
 
-		modelRenderer = new ModelRenderer(this);
-		modelRenderer.setRotationPoint(0.0F, 24.0F, 0.0F);
-		modelRenderer.setTextureOffset(0, 0).addBox(-0.5F, -0.5F, -6.0F, 1.0F, 1.0F, 12.0F, 0.0F, false);
-	}
-
-	@Override
-	public void render(MatrixStack matrixStack, IVertexBuilder buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha){
-		modelRenderer.render(matrixStack, buffer, packedLight, packedOverlay);
-	}
-
-	@Override
-	public void setRotationAngles(DartEntity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-
-	}
+    @Override
+    public ResourceLocation getAnimationFileLocation(DartEntity entity) {
+        return new ResourceLocation(OttselTurrets.MOD_ID, "animations/entity/dart.animation.json");
+    }
 }

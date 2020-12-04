@@ -1,65 +1,188 @@
 {
 	"format_version": "1.8.0",
 	"animations": {
-		"animation.ottselturrets.test": {
+		"animation.turret_horizontal.scan": {
 			"loop": true,
-			"animation_length": 4.16,
+			"animation_length": 5.56,
 			"bones": {
-				"plate": {
+				"head": {
 					"rotation": {
 						"0.0": {
 							"vector": [0, 0, 0]
 						},
-						"1.04": {
-							"vector": [0, 90, 0]
-						},
-						"2.08": {
-							"vector": [0, 180, 0]
-						},
-						"3.12": {
-							"vector": [0, 270, 0]
+						"1.4": {
+							"vector": [0, 45, 0],
+							"easing": "easeOutSine"
 						},
 						"4.16": {
-							"vector": [0, 360, 0]
+							"vector": [0, -45, 0],
+							"easing": "easeInOutSine"
+						},
+						"5.56": {
+							"vector": [0, 0, 0],
+							"easing": "easeInSine"
+						}
+					}
+				}
+			}
+		},
+		"animation.turret_horizontal.level_to_down": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 0.56,
+			"bones": {
+				"thigh_south": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.32": {
+							"vector": [-75, 0, 0],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
 						}
 					}
 				},
-				"cannon": {
+				"base": {
 					"rotation": {
 						"0.0": {
-							"vector": [0, 0, -90]
+							"vector": [0, 0, 0]
 						},
-						"0.52": {
-							"vector": [0, 0, 90],
-							"easing": "easeInOutSine"
+						"0.32": {
+							"vector": [105, 0, 0],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"thigh_north": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
 						},
-						"1.04": {
-							"vector": [0, 0, -90],
-							"easing": "easeInOutSine"
+						"0.32": {
+							"vector": [-10, 0, 0],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"calf_north": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
 						},
-						"1.56": {
-							"vector": [0, 0, 90],
-							"easing": "easeInOutSine"
+						"0.32": {
+							"vector": [62.5, 0, 0],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"foot_north": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
 						},
-						"2.08": {
-							"vector": [0, 0, -90],
-							"easing": "easeInOutSine"
+						"0.32": {
+							"vector": [-22.5, 0, 0],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"thigh_east": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
 						},
-						"2.6": {
-							"vector": [0, 0, 90],
-							"easing": "easeInOutSine"
+						"0.32": {
+							"vector": [-22.5, 0, 0],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"knee_east": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
 						},
-						"3.12": {
-							"vector": [0, 0, -90],
-							"easing": "easeInOutSine"
+						"0.32": {
+							"vector": [0, -7.5, 7.5],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"calf_east": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
 						},
-						"3.64": {
-							"vector": [0, 0, 90],
-							"easing": "easeInOutSine"
+						"0.32": {
+							"vector": [5, -2.5, 10],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"foot_east": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
 						},
-						"4.16": {
-							"vector": [0, 0, -90],
-							"easing": "easeInOutSine"
+						"0.32": {
+							"vector": [17.5, 0, 10],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"thigh_west": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.32": {
+							"vector": [-22.5, 0, 0],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"knee_west": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.32": {
+							"vector": [0, 7.5, -7.5],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"calf_west": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.32": {
+							"vector": [5, 2.5, -10],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"foot_west": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.32": {
+							"vector": [17.5, 0, -10],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
 						}
 					}
 				}

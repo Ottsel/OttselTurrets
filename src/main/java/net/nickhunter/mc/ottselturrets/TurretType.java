@@ -32,7 +32,6 @@ public enum TurretType {
     }
 
     public static ResourceLocation getTextureFromType(TurretType turretType) {
-        //OttselTurrets.LOGGER.debug("Texture from turret type: "+turretType);
         switch (turretType) {
             case PHYSICAL:
                 return new ResourceLocation(OttselTurrets.MOD_ID, "textures/blocks/physical_turret.png");
@@ -46,7 +45,7 @@ public enum TurretType {
                 return new ResourceLocation(OttselTurrets.MOD_ID, "textures/blocks/poison_turret.png");
             case LASER:
             default:
-                return new ResourceLocation(OttselTurrets.MOD_ID, "textures/blocks/laser_turret.png");
+                return new ResourceLocation(OttselTurrets.MOD_ID, "textures/blocks/turret_horizontal.png");
             case WITHER:
                 return new ResourceLocation(OttselTurrets.MOD_ID, "textures/blocks/wither_turret.png");
         }

@@ -20,7 +20,7 @@ public class EntityRegistry {
 
     public static final String LASER_DART_NAME = "laser_dart";
     public static final RegistryObject<EntityType<DartEntity>> DART = ENTITIES.register(LASER_DART_NAME,
-            () -> EntityType.Builder.create(DartEntity::new, EntityClassification.MISC)
+            () -> EntityType.Builder.create((EntityType.IFactory<DartEntity>) DartEntity::new, EntityClassification.MISC)
                     .size(1, 1)
                     .build(new ResourceLocation(LASER_DART_NAME, OttselTurrets.MOD_ID).toString())
     );

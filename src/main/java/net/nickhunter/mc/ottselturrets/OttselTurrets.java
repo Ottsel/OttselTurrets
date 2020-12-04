@@ -15,6 +15,7 @@ import software.bernie.geckolib3.GeckoLib;
 public class OttselTurrets {
     public static final String MOD_ID = "ottselturrets";
     public static final Logger LOGGER = LogManager.getLogger();
+    public static final int TICKS_PER_SECOND = 20;
 
     public OttselTurrets() {
         GeckoLib.initialize();
@@ -27,6 +28,7 @@ public class OttselTurrets {
         TileRegistry.init();
         EntityRegistry.init();
     }
+
     private void setup(final FMLCommonSetupEvent event) {
 
     }
@@ -34,5 +36,4 @@ public class OttselTurrets {
     private void doClientStuff(final FMLClientSetupEvent event) {
         RendererRegistry.init();
     }
-
 }

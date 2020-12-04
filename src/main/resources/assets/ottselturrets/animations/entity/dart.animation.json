@@ -1,0 +1,53 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.dart.shrink": {
+			"animation_length": 0.16,
+			"bones": {
+				"dart": {
+					"rotation": {
+						"vector": ["xRotation", "yRotation", 0]
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0],
+							"easing": "linear"
+						},
+						"0.16": {
+							"post": {
+								"vector": [0, 0, "-length*8"],
+								"easing": "easeInExpo"
+							},
+							"lerp_mode": "catmullrom"
+						}
+					},
+					"scale": {
+						"0.0": {
+							"vector": [1, 1, "length"],
+							"easing": "linear"
+						},
+						"0.16": {
+							"post": {
+								"vector": [1, 1, 0],
+								"easing": "easeInExpo"
+							},
+							"lerp_mode": "catmullrom"
+						}
+					}
+				}
+			},
+			"particle_effects": {}
+		},
+		"animation.dart.zero": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"dart": {
+					"scale": {
+						"vector": [0, 0, 0]
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}
