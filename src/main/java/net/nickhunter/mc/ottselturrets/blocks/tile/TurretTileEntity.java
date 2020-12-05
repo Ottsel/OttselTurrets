@@ -45,6 +45,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     public float beamLength;
     public float yawToTarget;
+    public float pitchToTarget;
 
     public boolean playChargeSound;
     public boolean playShootSound;
@@ -229,19 +230,41 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
             playSoundEffect(SoundRegistry.LASER_BOLT.getSound());
             playShootSound = false;
         }
-        setBeamLength(target);
         lookAtTarget(target);
+        setBeamLength(target);
     }
 
     private void setBeamLength(Vec3d targetPos) {
-        beamLength = (float) targetPos.distanceTo(new Vec3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()));
+        if (world == null) return;
+        Vec3d posVec = new Vec3d(this.pos.getX()+.5, this.pos.getY()+1, this.pos.getZ()+.5);
+        //targetPos = targetPos.add(new Vec3d(0,1,0));
+        Vec3d posOffset = posVec.subtract(targetPos);
+        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec.add(posOffset), targetPos, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
+        if(result.getType() == RayTraceResult.Type.MISS) {
+            beamLength = 256;
+        }else {
+            beamLength = (float) posVec.distanceTo(result.getHitVec());
+        }
     }
 
     private void lookAtTarget(Vec3d targetPos) {
+        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(targetPos);
+        yawToTarget = getYaw(diffPos);
+        pitchToTarget = getPitch(diffPos);
+    }
 
-        Vec3d diffPos = new Vec3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()).subtract(targetPos);
-        yawToTarget = (float) MathHelper.wrapDegrees(MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
-        OttselTurrets.LOGGER.debug(yawToTarget);
+    private float getYaw(Vec3d diffPos) {
+        return (float) MathHelper.wrapDegrees(MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
+    }
+    private float getPitch(Vec3d diffPos) {
+        double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
+        int sign;
+        if (yawToTarget < 0)
+            sign = -1;
+        else {
+            sign = 1;
+        }
+        return (float) MathHelper.wrapDegrees((MathHelper.atan2(sign*horizComponent,diffPos.y) * (double) (180F / (float) Math.PI) + 90));
     }
 
     private int getYawOffset() {
@@ -279,10 +302,10 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         }
 
         //Set the new animation, loop only if it isn't the SHOOT animation.
-        if(currentAnimation.equals(TurretAnimations.SHOOT)) {
-            controller.setAnimation(builder.addAnimation(currentAnimation,false));
-        }else{
-            controller.setAnimation(builder.addAnimation(currentAnimation,true));
+        if (currentAnimation.equals(TurretAnimations.SHOOT)) {
+            controller.setAnimation(builder.addAnimation(currentAnimation, false));
+        } else {
+            controller.setAnimation(builder.addAnimation(currentAnimation, true));
         }
         return PlayState.CONTINUE;
     }
