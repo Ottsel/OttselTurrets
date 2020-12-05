@@ -7,16 +7,19 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.*;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.TurretType;
-import net.nickhunter.mc.ottselturrets.entities.DartEntity;
+import net.nickhunter.mc.ottselturrets.network.packets.PacketTurretUpdate;
 import net.nickhunter.mc.ottselturrets.registry.SoundRegistry;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
+import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
+import software.bernie.geckolib3.core.builder.Animation;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
@@ -30,16 +33,36 @@ import java.util.List;
 import static net.minecraft.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 import static net.nickhunter.mc.ottselturrets.TurretType.getTurretTypeFromInt;
 
-
+@SuppressWarnings("rawtypes")
 public class TurretTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable {
 
-    private final AnimationFactory factory = new AnimationFactory(this);
     public TurretType turretType;
-    public float yawToTarget;
-    public boolean targetExists;
     public static final int range = 10;
+    public static final int damage = 20;
     public static final double timeToCharge = 1.5;
     public static final double timeToCoolDown = 2.0;
+    public int chargeResetTime = OttselTurrets.TICKS_PER_SECOND * 2;
+
+    public float beamLength;
+    public float yawToTarget;
+
+    public boolean playChargeSound;
+    public boolean playShootSound;
+    private boolean chargeSoundBroadcasted;
+
+    public int chargeTime = -1;
+    public int coolDownTime = -1;
+
+    private final AnimationFactory factory = new AnimationFactory(this);
+    public String currentAnimation = TurretAnimations.SCAN;
+    public String prevAnimation = TurretAnimations.SCAN;
+
+
+    public static class TurretAnimations {
+        public static final String SCAN = "animation.turret_horizontal.scan";
+        public static final String AIM_AT_TARGET = "animation.turret_horizontal.rotate_head";
+        public static final String SHOOT = "animation.turret_horizontal.fire_beam";
+    }
 
     public TurretTileEntity() {
         this(TileRegistry.TURRET.get());
@@ -55,117 +78,84 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         super(tileEntityTypeIn == null ? TileRegistry.TURRET.get() : tileEntityTypeIn);
     }
 
-    private <E extends TileEntity & IAnimatable> PlayState predicate(AnimationEvent<E> event) {
-        AnimationController controller = event.getController();
-        if (!targetExists)
-            controller.setAnimation(new AnimationBuilder().addAnimation("animation.turret_horizontal.scan", true));
-        controller.transitionLengthTicks = 0;
-
-        return PlayState.CONTINUE;
-    }
-
     @Override
     public void tick() {
-
-        if (coolDownTime != -1) {
-            coolDown();
-            return;
-        }
-
+        if (world == null) return;
         List<LivingEntity> targets = getTargets();
         if (!targets.isEmpty()) {
             LivingEntity target = getClosestTarget(targets);
-            if (target.isAlive()) {
-                targetExists = true;
-                lookAtTarget(new Vec3d(target.getPosition().getX(), target.getPosition().getY(), target.getPosition().getZ()));
-                chargeUp(target.getPositionVec());
+
+            if (world.isRemote) {
+                clientTick(target.getPositionVec());
             } else {
-                targetExists = false;
+                if (coolDownTime != -1) {
+                    coolDown();
+                    return;
+                }
+                updateClient(TurretAnimations.AIM_AT_TARGET);
+                chargeUp(target);
             }
-        } else {
-            targetExists = false;
+        } else if (!world.isRemote) {
+            if (coolDownTime != -1) {
+                coolDown();
+            }
+            if (chargeTime != -1) {
+                chargeResetCountdown();
+            } else {
+                updateClient(TurretAnimations.SCAN);
+            }
         }
     }
 
-    public int chargeTime = -1;
-    private boolean chargeSoundPlayed;
-
-    private void chargeUp(Vec3d targetPos) {
+    private void chargeUp(LivingEntity target) {
         if (chargeTime < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) {
             chargeTime++;
-            if (chargeSoundPlayed) return;
+            if (chargeSoundBroadcasted) return;
             playSoundEffect(SoundRegistry.LASER_CHARGE.getSound());
-            chargeSoundPlayed = true;
+            chargeSoundBroadcasted = true;
         } else {
-            fireTurret(targetPos);
+            fireTurret(target);
             coolDown();
             chargeTime = -1;
-            chargeSoundPlayed = false;
+            chargeSoundBroadcasted = false;
+
         }
     }
 
-    public int coolDownTime = -1;
+    private void fireTurret(LivingEntity target) {
+        updateClient(TurretAnimations.SHOOT);
+        playSoundEffect(SoundRegistry.LASER_BOLT.getSound());
+        target.attackEntityFrom(new DamageSource(DamageSource.MAGIC.damageType), damage);
+    }
 
     private void coolDown() {
-        if (coolDownTime < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) {
+        if (coolDownTime < timeToCoolDown * OttselTurrets.TICKS_PER_SECOND - 1) {
             coolDownTime++;
         } else {
             coolDownTime = -1;
         }
     }
 
-    private void lookAtTarget(Vec3d targetPos) {
-        Vec3d diffPos = new Vec3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()).subtract(targetPos);
-        yawToTarget = (float) (MathHelper.atan2(diffPos.x, diffPos.z) * (double) (180F / (float) Math.PI)) + getYawOffset();
-    }
-
-    private int getYawOffset() {
-        switch (this.getBlockState().get(HORIZONTAL_FACING)) {
-            case NORTH:
-            default:
-                return 180;
-            case SOUTH:
-                return 0;
-            case EAST:
-                return 90;
-            case WEST:
-                return -90;
+    private void chargeResetCountdown() {
+        if (chargeResetTime == 0) {
+            chargeReset();
+            chargeResetTime = OttselTurrets.TICKS_PER_SECOND * 2;
+        } else {
+            chargeResetTime--;
         }
     }
 
-    private void fireTurret(Vec3d targetPos) {
-        world.addEntity(new DartEntity(this.pos.add(getDartSpawnOffset()), world, targetPos));
-        playSoundEffect(SoundRegistry.LASER_BOLT.getSound());
+    private void chargeReset() {
+        chargeTime = -1;
+        chargeSoundBroadcasted = false;
     }
 
-    private void playSoundEffect(SoundEvent soundEvent) {
-
-        for (PlayerEntity player : world.getPlayers()) {
-            if (player.getPosition().withinDistance(this.pos, range * 2)) {
-                Vec3i playerPos = new Vec3i(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ());
-                world.playSound(
-                        player,
-                        this.pos,
-                        soundEvent,
-                        SoundCategory.BLOCKS,
-                        (float) (1 / Math.sqrt((this.pos.distanceSq(playerPos)))),
-                        1);
-            }
-        }
-    }
-
-    private BlockPos getDartSpawnOffset() {
-        switch (this.getBlockState().get(HORIZONTAL_FACING)) {
-            case NORTH:
-            default:
-                return new BlockPos(0, 0, 1);
-            case SOUTH:
-                return new BlockPos(0, 0, -1);
-            case EAST:
-                return new BlockPos(1, 0, 0);
-            case WEST:
-                return new BlockPos(-1, 0, 0);
-        }
+    public void playSoundEffect(SoundEvent soundEvent) {
+        if (world == null) return;
+        PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ());
+        if (player == null) return;
+        Vec3i playerPos = new Vec3i(player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ());
+        world.playSound(player, this.pos, soundEvent, SoundCategory.BLOCKS, (float) (1 / Math.sqrt((this.pos.distanceSq(playerPos)))), 1);
     }
 
     private List<LivingEntity> getTargets() {
@@ -199,14 +189,12 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         return target;
     }
 
-    @Override
-    public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController(this, "controller", 0, this::predicate));
-    }
-
-    @Override
-    public AnimationFactory getFactory() {
-        return this.factory;
+    private void updateClient(String animation) {
+        if (currentAnimation.equals(animation)) return;
+        prevAnimation = currentAnimation;
+        currentAnimation = animation;
+        if (world != null)
+            OttselTurrets.getNetworkChannel().sendToTrackingChunk(new PacketTurretUpdate(currentAnimation, pos), world.getChunkAt(pos));
     }
 
     @Override
@@ -228,8 +216,90 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         return write(new CompoundNBT());
     }
 
+    /*
+    Client
+     */
+
+    private void clientTick(Vec3d target) {
+        if (playChargeSound) {
+            playSoundEffect(SoundRegistry.LASER_CHARGE.getSound());
+            playChargeSound = false;
+        }
+        if (playShootSound) {
+            playSoundEffect(SoundRegistry.LASER_BOLT.getSound());
+            playShootSound = false;
+        }
+        setBeamLength(target);
+        lookAtTarget(target);
+    }
+
+    private void setBeamLength(Vec3d targetPos) {
+        beamLength = (float) targetPos.distanceTo(new Vec3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()));
+    }
+
+    private void lookAtTarget(Vec3d targetPos) {
+
+        Vec3d diffPos = new Vec3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()).subtract(targetPos);
+        yawToTarget = (float) MathHelper.wrapDegrees(MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
+        OttselTurrets.LOGGER.debug(yawToTarget);
+    }
+
+    private int getYawOffset() {
+        switch (this.getBlockState().get(HORIZONTAL_FACING)) {
+            case NORTH:
+            default:
+                return 90;
+            case SOUTH:
+                return -90;
+            case EAST:
+                return 0;
+            case WEST:
+                return 180;
+        }
+    }
+
+    private <E extends TileEntity & IAnimatable> PlayState predicate(AnimationEvent<E> event) {
+        AnimationController controller = event.getController();
+        AnimationBuilder builder = new AnimationBuilder();
+        Animation animation = controller.getCurrentAnimation();
+        AnimationState state = controller.getAnimationState();
+        controller.transitionLengthTicks = 0;
+        if (animation != null) {
+            if (!animation.animationName.equals(currentAnimation)) {
+                OttselTurrets.LOGGER.debug(currentAnimation);
+            }
+
+            //If the current animation is the SHOOT animation, do not interrupt it.
+            if (animation.animationName.equals(TurretAnimations.SHOOT) && state.equals(AnimationState.Running))
+                return PlayState.CONTINUE;
+
+            //If the current animation is equal to the next animation, do not interrupt it.
+            if (currentAnimation.equals(animation.animationName) && state.equals(AnimationState.Running))
+                return PlayState.CONTINUE;
+        }
+
+        //Set the new animation, loop only if it isn't the SHOOT animation.
+        if(currentAnimation.equals(TurretAnimations.SHOOT)) {
+            controller.setAnimation(builder.addAnimation(currentAnimation,false));
+        }else{
+            controller.setAnimation(builder.addAnimation(currentAnimation,true));
+        }
+        return PlayState.CONTINUE;
+    }
+
+    @Override
+    public void registerControllers(AnimationData animationData) {
+        animationData.addAnimationController(new AnimationController(this, "controller", 0, this::predicate));
+    }
+
+    @Override
+    public AnimationFactory getFactory() {
+        return this.factory;
+    }
+
     @Override
     public void handleUpdateTag(CompoundNBT tag) {
         turretType = getTurretTypeFromInt(tag.getInt("TurretType"));
+        currentAnimation = tag.getString("CurrentAnimation");
     }
 }

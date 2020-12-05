@@ -3,22 +3,22 @@
 	"animations": {
 		"animation.turret_horizontal.scan": {
 			"loop": true,
-			"animation_length": 5.56,
+			"animation_length": 6.4,
 			"bones": {
 				"head": {
 					"rotation": {
 						"0.0": {
 							"vector": [0, 0, 0]
 						},
-						"1.4": {
+						"1.6": {
 							"vector": [0, 45, 0],
 							"easing": "easeOutSine"
 						},
-						"4.16": {
+						"4.8": {
 							"vector": [0, -45, 0],
 							"easing": "easeInOutSine"
 						},
-						"5.56": {
+						"6.4": {
 							"vector": [0, 0, 0],
 							"easing": "easeInSine"
 						}
@@ -183,6 +183,93 @@
 							"vector": [17.5, 0, -10],
 							"easing": "easeInElastic",
 							"easingArgs": [1]
+						}
+					}
+				}
+			}
+		},
+		"animation.turret_horizontal.fire_beam": {
+			"animation_length": 1.08,
+			"bones": {
+				"beam": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.12": {
+							"vector": [0, 0, "-((beam_length-.5)*8)"],
+							"easing": "easeInExpo"
+						},
+						"0.4": {
+							"vector": [0, 0, "-(beam_length*8)"]
+						},
+						"0.56": {
+							"vector": [0, 0, "-beam_length*16"],
+							"easing": "easeInExpo"
+						},
+						"0.6": {
+							"vector": [0, 0, 0]
+						}
+					},
+					"scale": {
+						"0.0": {
+							"vector": [1, 1, 1]
+						},
+						"0.12": {
+							"vector": [1, 1, "(beam_length-.5)*16"],
+							"easing": "easeInExpo"
+						},
+						"0.4": {
+							"vector": [1, 1, "beam_length*16"]
+						},
+						"0.56": {
+							"vector": [1, 1, 0],
+							"easing": "easeInExpo"
+						},
+						"0.6": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"slide": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.16": {
+							"vector": [0, 0, 2.5],
+							"easing": "easeInElastic"
+						},
+						"0.8": {
+							"vector": [0, 0, 2.5]
+						},
+						"1.08": {
+							"vector": [0, 0, 0],
+							"easing": "easeInElastic"
+						}
+					}
+				}
+			}
+		},
+		"animation.turret_horizontal.rotate_head": {
+			"loop": true,
+			"animation_length": 0.32,
+			"bones": {
+				"head": {
+					"rotation": {
+						"0.0": {
+							"vector": ["head_rotation_x_prev", "head_rotation_y_prev", 0]
+						},
+						"0.32": {
+							"vector": ["head_rotation_x", "head_rotation_y", 0]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, "head_rotation_x_prev < 0 ? -head_rotation_x_prev/head_rotation_x_max*.6 : head_rotation_x_prev/head_rotation_x_max*.6", 0]
+						},
+						"0.32": {
+							"vector": [0, "head_rotation_x < 0 ? -head_rotation_x/head_rotation_x_max*.6 : head_rotation_x/head_rotation_x_max*.6", 0]
 						}
 					}
 				}

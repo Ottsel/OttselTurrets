@@ -1,8 +1,10 @@
 package net.nickhunter.mc.ottselturrets.client.renderers.tile;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
 import net.nickhunter.mc.ottselturrets.client.models.tile.TurretTileModel;
@@ -11,6 +13,11 @@ import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
 public class TurretTileRenderer extends GeoBlockRenderer<TurretTileEntity> {
     public TurretTileRenderer(TileEntityRendererDispatcher rendererDispatcherIn) {
         super(rendererDispatcherIn, new TurretTileModel());
+    }
+
+    @Override
+    public void render(TileEntity tile, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
+        super.render(tile, partialTicks, matrixStackIn, bufferIn, combinedLightIn, combinedOverlayIn);
     }
 
     @Override

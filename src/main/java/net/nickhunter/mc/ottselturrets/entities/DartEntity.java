@@ -1,12 +1,9 @@
 package net.nickhunter.mc.ottselturrets.entities;
 
 import net.minecraft.entity.*;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.IPacket;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.HandSide;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -21,11 +18,10 @@ import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.resource.GeckoLibCache;
 
 import java.util.List;
 
-public class DartEntity extends CreatureEntity implements IAnimatable {
+public class DartEntity extends Entity implements IAnimatable {
 
     private final AnimationFactory factory = new AnimationFactory(this);
     public boolean isBeam;
@@ -36,12 +32,8 @@ public class DartEntity extends CreatureEntity implements IAnimatable {
 
     AxisAlignedBB boundingBox = getBoundingBox();
 
-    public DartEntity(EntityType<? extends CreatureEntity> entityTypeIn, World worldIn) {
+    public DartEntity(EntityType<?> entityTypeIn, World worldIn) {
         super(entityTypeIn, worldIn);
-        this.hasNoGravity();
-        this.noClip = true;
-        this.setNoAI(true);
-        this.setInvulnerable(true);
         this.ignoreFrustumCheck = true;
     }
 
@@ -64,7 +56,6 @@ public class DartEntity extends CreatureEntity implements IAnimatable {
         beamLength = (float) target.distanceTo(this.getPositionVec());
         Vec3d motion = this.getMotion();
         Vec3d middle = motion.scale(beamLength / 2);
-        GeckoLibCache.getInstance().parser.setValue("length", beamLength);
 
         setAngleFromMotion(motion);
         setBoundingBoxWidth(beamLength);
@@ -152,4 +143,20 @@ public class DartEntity extends CreatureEntity implements IAnimatable {
     public AnimationFactory getFactory() {
         return this.factory;
     }
+
+    @Override
+    protected void registerData() {
+
+    }
+
+    @Override
+    protected void readAdditional(CompoundNBT compound) {
+
+    }
+
+    @Override
+    protected void writeAdditional(CompoundNBT compound) {
+
+    }
+
 }

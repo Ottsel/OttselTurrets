@@ -5,9 +5,6 @@
 			"animation_length": 0.16,
 			"bones": {
 				"dart": {
-					"rotation": {
-						"vector": ["xRotation", "yRotation", 0]
-					},
 					"position": {
 						"0.0": {
 							"vector": [0, 0, 0],
@@ -15,7 +12,7 @@
 						},
 						"0.16": {
 							"post": {
-								"vector": [0, 0, "-length*8"],
+								"vector": [0, 0, "-1*dart_beam_length*8"],
 								"easing": "easeInExpo"
 							},
 							"lerp_mode": "catmullrom"
@@ -23,7 +20,7 @@
 					},
 					"scale": {
 						"0.0": {
-							"vector": [1, 1, "length"],
+							"vector": [1, 1, "dart_beam_length"],
 							"easing": "linear"
 						},
 						"0.16": {
