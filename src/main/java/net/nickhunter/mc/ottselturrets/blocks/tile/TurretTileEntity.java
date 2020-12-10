@@ -19,9 +19,9 @@ import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.Animation;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
+import software.bernie.geckolib3.core.event.CustomInstructionKeyframeEvent;
 import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
@@ -47,6 +47,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     public float yawToTarget;
     public float pitchToTarget;
 
+    public boolean rotationInit;
     public boolean playChargeSound;
     public boolean playShootSound;
     private boolean chargeSoundBroadcasted;
@@ -63,6 +64,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         public static final String SCAN = "animation.turret_horizontal.scan";
         public static final String AIM_AT_TARGET = "animation.turret_horizontal.rotate_head";
         public static final String SHOOT = "animation.turret_horizontal.fire_beam";
+        public static final String RESET_ROTATION = "animation.turret_horizontal.reset_rotation";
     }
 
     public TurretTileEntity() {
@@ -103,7 +105,10 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
             if (chargeTime != -1) {
                 chargeResetCountdown();
             } else {
-                updateClient(TurretAnimations.SCAN);
+                yawToTarget = 0;
+                pitchToTarget = 0;
+                rotationInit = false;
+                updateClient(TurretAnimations.RESET_ROTATION);
             }
         }
     }
@@ -236,14 +241,13 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     private void setBeamLength(Vec3d targetPos) {
         if (world == null) return;
-        Vec3d posVec = new Vec3d(this.pos.getX()+.5, this.pos.getY()+1, this.pos.getZ()+.5);
-        //targetPos = targetPos.add(new Vec3d(0,1,0));
+        Vec3d posVec = new Vec3d(this.pos.getX() + .5, this.pos.getY() + 1, this.pos.getZ() + .5);
         Vec3d posOffset = posVec.subtract(targetPos);
-        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec.add(posOffset), targetPos, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
-        if(result.getType() == RayTraceResult.Type.MISS) {
+        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec.add(posOffset), targetPos, RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, null));
+        if (result.getType() == RayTraceResult.Type.MISS) {
             beamLength = 256;
-        }else {
-            beamLength = (float) posVec.distanceTo(result.getHitVec());
+        } else {
+            beamLength = 256;//(float) posVec.distanceTo(result.getHitVec());
         }
     }
 
@@ -256,6 +260,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     private float getYaw(Vec3d diffPos) {
         return (float) MathHelper.wrapDegrees(MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
     }
+
     private float getPitch(Vec3d diffPos) {
         double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
         int sign;
@@ -264,10 +269,10 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         else {
             sign = 1;
         }
-        return (float) MathHelper.wrapDegrees((MathHelper.atan2(sign*horizComponent,diffPos.y) * (double) (180F / (float) Math.PI) + 90));
+        return (float) MathHelper.wrapDegrees((MathHelper.atan2(sign * horizComponent, diffPos.y) * (double) (180F / (float) Math.PI) + 90));
     }
 
-    private int getYawOffset() {
+    public int getYawOffset() {
         switch (this.getBlockState().get(HORIZONTAL_FACING)) {
             case NORTH:
             default:
@@ -281,38 +286,41 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         }
     }
 
+    public boolean lookingAtTarget;
     private <E extends TileEntity & IAnimatable> PlayState predicate(AnimationEvent<E> event) {
         AnimationController controller = event.getController();
-        AnimationBuilder builder = new AnimationBuilder();
-        Animation animation = controller.getCurrentAnimation();
-        AnimationState state = controller.getAnimationState();
-        controller.transitionLengthTicks = 0;
-        if (animation != null) {
-            if (!animation.animationName.equals(currentAnimation)) {
-                OttselTurrets.LOGGER.debug(currentAnimation);
-            }
 
-            //If the current animation is the SHOOT animation, do not interrupt it.
-            if (animation.animationName.equals(TurretAnimations.SHOOT) && state.equals(AnimationState.Running))
-                return PlayState.CONTINUE;
-
-            //If the current animation is equal to the next animation, do not interrupt it.
-            if (currentAnimation.equals(animation.animationName) && state.equals(AnimationState.Running))
-                return PlayState.CONTINUE;
+        boolean loop = false;
+        if (currentAnimation.equals(TurretAnimations.RESET_ROTATION) && controller.getAnimationState() == AnimationState.Stopped) {
+            currentAnimation = TurretAnimations.SCAN;
+            loop = true;
+        }
+        if (currentAnimation.equals(TurretAnimations.AIM_AT_TARGET)) {
+            loop = true;
         }
 
-        //Set the new animation, loop only if it isn't the SHOOT animation.
-        if (currentAnimation.equals(TurretAnimations.SHOOT)) {
-            controller.setAnimation(builder.addAnimation(currentAnimation, false));
-        } else {
-            controller.setAnimation(builder.addAnimation(currentAnimation, true));
-        }
+        controller.setAnimation(new AnimationBuilder().addAnimation(currentAnimation, loop));
         return PlayState.CONTINUE;
     }
+    private <ENTITY extends IAnimatable> void instructionListener(CustomInstructionKeyframeEvent<ENTITY> event)
+    {
+        switch (event.instructions.get(0)){
+            case "looking_at_target":
+                lookingAtTarget = true;
+                break;
+            case "reset_rotation":
+                pitchToTarget = 0;
+                yawToTarget = 0;
+                lookingAtTarget = true;
+        }
+    }
+
 
     @Override
     public void registerControllers(AnimationData animationData) {
-        animationData.addAnimationController(new AnimationController(this, "controller", 0, this::predicate));
+        AnimationController controller = new AnimationController(this, "controller", 0, this::predicate);
+        controller.registerCustomInstructionListener(this::instructionListener);
+        animationData.addAnimationController(controller);
     }
 
     @Override
