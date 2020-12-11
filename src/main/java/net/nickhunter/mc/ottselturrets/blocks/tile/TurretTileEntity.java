@@ -19,6 +19,7 @@ import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
+import software.bernie.geckolib3.core.builder.Animation;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
 import software.bernie.geckolib3.core.event.CustomInstructionKeyframeEvent;
@@ -47,18 +48,15 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     public float yawToTarget;
     public float pitchToTarget;
 
-    public boolean rotationInit;
-    public boolean playChargeSound;
-    public boolean playShootSound;
-    private boolean chargeSoundBroadcasted;
+    private boolean chargeSoundHasPlayed;
+    public boolean lookingAtTarget;
+    public boolean aimingPaused;
 
     public int chargeTime = -1;
     public int coolDownTime = -1;
 
     private final AnimationFactory factory = new AnimationFactory(this);
-    public String currentAnimation = TurretAnimations.SCAN;
-    public String prevAnimation = TurretAnimations.SCAN;
-
+    public String queuedAnimation = TurretAnimations.SCAN;
 
     public static class TurretAnimations {
         public static final String SCAN = "animation.turret_horizontal.scan";
@@ -84,76 +82,110 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     @Override
     public void tick() {
         if (world == null) return;
+        //Get a list of nearby potential targets.
         List<LivingEntity> targets = getTargets();
-        if (!targets.isEmpty()) {
+        if (!targets.isEmpty()) { //If there are potential targets...
             LivingEntity target = getClosestTarget(targets);
-
-            if (world.isRemote) {
-                clientTick(target.getPositionVec());
-            } else {
+            if (world.isRemote) { //On client...
+                //Call clientTick.
+                clientTrackTarget(target.getPositionVec());
+            } else { //On server...
+                //Return if still cooling down.
                 if (coolDownTime != -1) {
                     coolDown();
+
+                    //Reset the turret's rotation.
+                    updateClient(TurretAnimations.RESET_ROTATION);
                     return;
                 }
+                //Tell the client to aim at the target, then charge up the turret.
                 updateClient(TurretAnimations.AIM_AT_TARGET);
                 chargeUp(target);
             }
-        } else if (!world.isRemote) {
-            if (coolDownTime != -1) {
-                coolDown();
-            }
-            if (chargeTime != -1) {
-                chargeResetCountdown();
-            } else {
-                yawToTarget = 0;
-                pitchToTarget = 0;
-                rotationInit = false;
-                updateClient(TurretAnimations.RESET_ROTATION);
+        } else { //If there are no potential targets...
+            if (!world.isRemote) { //On server...
+                //Cool down if applicable.
+                if (coolDownTime != -1) {
+                    coolDown();
+                }
+                //Count down the charge reset timer if the turret has started to charge up...
+                if (chargeTime != -1) {
+                    resetTimer();
+                } else { //If the charge expires...
+                    //Reset the turret's rotation.
+                    yawToTarget = 0;
+                    pitchToTarget = 0;
+                    updateClient(TurretAnimations.RESET_ROTATION);
+                }
             }
         }
     }
 
+    /*
+    Acts as a timer to determine if the turret is charged up and can fire.
+     */
     private void chargeUp(LivingEntity target) {
-        if (chargeTime < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) {
+        if (chargeTime < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) { //If the turret is still charging up...
             chargeTime++;
-            if (chargeSoundBroadcasted) return;
+
+            //Return if the charge sound has already been played. TODO Sound event
+            if (chargeSoundHasPlayed) return;
+
+            //Play the charge sound
             playSoundEffect(SoundRegistry.LASER_CHARGE.getSound());
-            chargeSoundBroadcasted = true;
-        } else {
+            chargeSoundHasPlayed = true;
+        } else { //If the turret is done charging up...
+
+            //Fire the turret and start the cooldown.
             fireTurret(target);
             coolDown();
+
+            //Reset the charge time and charge sound flag.
             chargeTime = -1;
-            chargeSoundBroadcasted = false;
+            chargeSoundHasPlayed = false;
 
         }
     }
 
+    /*
+    Facilitates firing the turret.
+     */
     private void fireTurret(LivingEntity target) {
+
+        //Tell the client to play the shooting animation.
         updateClient(TurretAnimations.SHOOT);
+
+        //Play shooting sound. TODO Sound event
         playSoundEffect(SoundRegistry.LASER_BOLT.getSound());
+
+        //Damage the target. //TODO customize this
         target.attackEntityFrom(new DamageSource(DamageSource.MAGIC.damageType), damage);
     }
 
+    /*
+    Acts as a cool down timer for the turret
+     */
     private void coolDown() {
-        if (coolDownTime < timeToCoolDown * OttselTurrets.TICKS_PER_SECOND - 1) {
+        if (coolDownTime < timeToCoolDown * OttselTurrets.TICKS_PER_SECOND - 1) { //If the turret is cooling down...
             coolDownTime++;
-        } else {
+        } else { //If the turret is done cooling down...
             coolDownTime = -1;
         }
     }
 
-    private void chargeResetCountdown() {
-        if (chargeResetTime == 0) {
-            chargeReset();
+    /*
+    Acts as a timer for expiring the turret's charge.
+     */
+    private void resetTimer() {
+        if (chargeResetTime == 0) { //If the turret's reset timer is done...
+
+            //Reset the charge.
+            chargeTime = -1;
+            chargeSoundHasPlayed = false;
             chargeResetTime = OttselTurrets.TICKS_PER_SECOND * 2;
-        } else {
+        } else { //If the turret's reset timer is not done...
             chargeResetTime--;
         }
-    }
-
-    private void chargeReset() {
-        chargeTime = -1;
-        chargeSoundBroadcasted = false;
     }
 
     public void playSoundEffect(SoundEvent soundEvent) {
@@ -196,11 +228,10 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     }
 
     private void updateClient(String animation) {
-        if (currentAnimation.equals(animation)) return;
-        prevAnimation = currentAnimation;
-        currentAnimation = animation;
+        if (queuedAnimation.equals(animation)) return;
+        queuedAnimation = animation;
         if (world != null)
-            OttselTurrets.getNetworkChannel().sendToTrackingChunk(new PacketTurretUpdate(currentAnimation, pos), world.getChunkAt(pos));
+            OttselTurrets.getNetworkChannel().sendToTrackingChunk(new PacketTurretUpdate(queuedAnimation, pos), world.getChunkAt(pos));
     }
 
     @Override
@@ -226,17 +257,13 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     Client
      */
 
-    private void clientTick(Vec3d target) {
-        if (playChargeSound) {
-            playSoundEffect(SoundRegistry.LASER_CHARGE.getSound());
-            playChargeSound = false;
-        }
-        if (playShootSound) {
-            playSoundEffect(SoundRegistry.LASER_BOLT.getSound());
-            playShootSound = false;
-        }
-        lookAtTarget(target);
+    /*
+    Tracks the target position every tick.
+     */
+    private void clientTrackTarget(Vec3d target) {
         setBeamLength(target);
+        if (aimingPaused) return;
+        lookAtTarget(target);
     }
 
     private void setBeamLength(Vec3d targetPos) {
@@ -247,7 +274,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         if (result.getType() == RayTraceResult.Type.MISS) {
             beamLength = 256;
         } else {
-            beamLength = 256;//(float) posVec.distanceTo(result.getHitVec());
+            beamLength = (float) posVec.distanceTo(result.getHitVec());
         }
     }
 
@@ -286,35 +313,58 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         }
     }
 
-    public boolean lookingAtTarget;
+    boolean loop;
+
     private <E extends TileEntity & IAnimatable> PlayState predicate(AnimationEvent<E> event) {
         AnimationController controller = event.getController();
+        Animation currentAnimation = controller.getCurrentAnimation();
 
-        boolean loop = false;
-        if (currentAnimation.equals(TurretAnimations.RESET_ROTATION) && controller.getAnimationState() == AnimationState.Stopped) {
-            currentAnimation = TurretAnimations.SCAN;
-            loop = true;
-        }
-        if (currentAnimation.equals(TurretAnimations.AIM_AT_TARGET)) {
-            loop = true;
+        if (currentAnimation != null) {
+
+            //Don't update animation if it will interrupt the SHOOT animation.
+            if (currentAnimation.animationName.equals(TurretAnimations.SHOOT) && controller.getAnimationState().equals(AnimationState.Running))
+                return PlayState.CONTINUE;
         }
 
-        controller.setAnimation(new AnimationBuilder().addAnimation(currentAnimation, loop));
+        //Set loop and other attributes depending on the animation that's queued.
+        switch (queuedAnimation) {
+            case TurretAnimations.SCAN:
+            case TurretAnimations.AIM_AT_TARGET:
+                loop = true;
+                break;
+            case TurretAnimations.SHOOT:
+                aimingPaused = true;
+                loop = false;
+                break;
+            case TurretAnimations.RESET_ROTATION:
+                if (controller.getAnimationState() == AnimationState.Stopped && !currentAnimation.animationName.equals(TurretAnimations.SHOOT)) {
+                    queuedAnimation = TurretAnimations.SCAN;
+                    loop = true;
+                    break;
+                }
+                loop = false;
+                break;
+        }
+
+        controller.setAnimation(new AnimationBuilder().addAnimation(queuedAnimation, loop));
         return PlayState.CONTINUE;
     }
-    private <ENTITY extends IAnimatable> void instructionListener(CustomInstructionKeyframeEvent<ENTITY> event)
-    {
-        switch (event.instructions.get(0)){
-            case "looking_at_target":
+
+    private <ENTITY extends IAnimatable> void instructionListener(CustomInstructionKeyframeEvent<ENTITY> event) {
+        for (String instruction : event.instructions) {
+            if (instruction.equals("looking_at_target")) {
+                OttselTurrets.LOGGER.debug("looking_at_target");
                 lookingAtTarget = true;
-                break;
-            case "reset_rotation":
+            }
+            if (instruction.equals("reset_rotation")) {
+                OttselTurrets.LOGGER.debug("reset_rotation");
                 pitchToTarget = 0;
                 yawToTarget = 0;
                 lookingAtTarget = true;
+                aimingPaused = false;
+            }
         }
     }
-
 
     @Override
     public void registerControllers(AnimationData animationData) {
@@ -331,6 +381,5 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     @Override
     public void handleUpdateTag(CompoundNBT tag) {
         turretType = getTurretTypeFromInt(tag.getInt("TurretType"));
-        currentAnimation = tag.getString("CurrentAnimation");
     }
 }

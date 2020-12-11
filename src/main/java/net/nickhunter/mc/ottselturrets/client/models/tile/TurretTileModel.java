@@ -24,11 +24,13 @@ public class TurretTileModel extends AnimatedGeoModel<TurretTileEntity> {
         if (pitch < -15) {
             pitch = -15;
         }
+        if (!entity.aimingPaused) {
+            GeckoLibCache.getInstance().parser.setValue("head_rotation_y", entity.yawToTarget);
+            GeckoLibCache.getInstance().parser.setValue("head_rotation_x", pitch);
+        }
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x_prev", headRotationXPrev);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_y_prev", headRotationYPrev);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x_max", headRotationXMax);
-        GeckoLibCache.getInstance().parser.setValue("head_rotation_y", entity.yawToTarget);
-        GeckoLibCache.getInstance().parser.setValue("head_rotation_x", pitch);
         GeckoLibCache.getInstance().parser.setValue("beam_length", entity.beamLength);
 
         if (entity.lookingAtTarget) {

@@ -30,14 +30,14 @@ public class PacketTurretUpdate extends OttselPacket {
 
     @Override
     public void client() {
-        OttselTurrets.LOGGER.debug("Packet received for turret at: " + pos);
+        OttselTurrets.LOGGER.debug("Packet received for turret at: " + pos + " Animation: " + currentAnimation);
         World world = Minecraft.getInstance().world;
         if (world != null) {
             TileEntity tileEntity = Minecraft.getInstance().world.getChunkAt(pos).getTileEntity(pos);
             if (tileEntity != null) {
                 if (tileEntity.getType() == TileRegistry.TURRET.get()) {
                     TurretTileEntity turret = (TurretTileEntity) tileEntity;
-                    turret.currentAnimation = currentAnimation;
+                    turret.queuedAnimation = currentAnimation;
                     if(currentAnimation.equals(AIM_AT_TARGET)){
                         turret.playSoundEffect(SoundRegistry.LASER_CHARGE.getSound());
                         return;
