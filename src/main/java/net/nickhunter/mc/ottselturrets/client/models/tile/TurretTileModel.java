@@ -10,32 +10,26 @@ import static net.nickhunter.mc.ottselturrets.TurretType.getTextureFromType;
 
 public class TurretTileModel extends AnimatedGeoModel<TurretTileEntity> {
 
-    public static final float headRotationXMax = 15;
     float headRotationYPrev;
     float headRotationXPrev;
-
 
     @Override
     public void setLivingAnimations(TurretTileEntity entity, Integer uniqueID) {
         float pitch = entity.pitchToTarget;
-        if (pitch > 15) {
-            pitch = 15;
-        }
-        if (pitch < -15) {
-            pitch = -15;
-        }
+        float yaw = entity.yawToTarget;
+
         if (!entity.aimingPaused) {
-            GeckoLibCache.getInstance().parser.setValue("head_rotation_y", entity.yawToTarget);
+            GeckoLibCache.getInstance().parser.setValue("head_rotation_y", yaw);
             GeckoLibCache.getInstance().parser.setValue("head_rotation_x", pitch);
         }
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x_prev", headRotationXPrev);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_y_prev", headRotationYPrev);
-        GeckoLibCache.getInstance().parser.setValue("head_rotation_x_max", headRotationXMax);
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_x_max", TurretTileEntity.headPitchMax);
         GeckoLibCache.getInstance().parser.setValue("beam_length", entity.beamLength);
 
         if (entity.lookingAtTarget) {
             headRotationXPrev = pitch;
-            headRotationYPrev = entity.yawToTarget;
+            headRotationYPrev = yaw;
             entity.lookingAtTarget = false;
         }
         super.setLivingAnimations(entity, uniqueID);
