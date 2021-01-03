@@ -8,7 +8,6 @@ import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.Direction;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.*;
@@ -17,6 +16,7 @@ import net.nickhunter.mc.ottselturrets.TurretType;
 import net.nickhunter.mc.ottselturrets.network.packets.PacketTurretUpdate;
 import net.nickhunter.mc.ottselturrets.registry.SoundRegistry;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
+import net.nickhunter.mc.ottselturrets.util.TiltDirection;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -51,7 +51,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     public float beamLength;
     public float yawToTarget;
     public float pitchToTarget;
-    public Direction localDirectionToTarget, tiltDirection;
+    public TiltDirection localDirectionToTarget, tiltDirection;
     public boolean tilt;
     public TurretState turretState = TurretState.SCANNING;
     public TurretState lastTurretState = TurretState.SCANNING;
@@ -74,6 +74,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         public static final String AIMING = "animation.turret_horizontal.rotate_head";
         public static final String FIRING = "animation.turret_horizontal.fire_beam";
         public static final String RESET_ROTATION = "animation.turret_horizontal.reset_rotation";
+
         public static final String TILT_NORTH = "animation.turret_horizontal.tilt_north";
         public static final String TILTED_NORTH = "animation.turret_horizontal.tilted_north";
         public static final String TILT_EAST = "animation.turret_horizontal.tilt_east";
@@ -83,6 +84,14 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         public static final String TILT_WEST = "animation.turret_horizontal.tilt_west";
         public static final String TILTED_WEST = "animation.turret_horizontal.tilted_west";
 
+        public static final String TILT_NORTHEAST = "animation.turret_horizontal.tilt_north_east";
+        public static final String TILTED_NORTHEAST = "animation.turret_horizontal.tilted_north_east";
+        public static final String TILT_SOUTHEAST = "animation.turret_horizontal.tilt_south_east";
+        public static final String TILTED_SOUTHEAST = "animation.turret_horizontal.tilted_south_east";
+        public static final String TILT_SOUTHWEST = "animation.turret_horizontal.tilt_south_west";
+        public static final String TILTED_SOUTHWEST = "animation.turret_horizontal.tilted_south_west";
+        public static final String TILT_NORTHWEST = "animation.turret_horizontal.tilt_north_west";
+        public static final String TILTED_NORTHWEST = "animation.turret_horizontal.tilted_north_west";
     }
 
     public TurretTileEntity() {
@@ -348,22 +357,38 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     // Returns the rough cardinal direaction of the target (RELATIVE TO THE TURRET).
     // Might add intercardinal directions later.
-    Direction getTargetLocalDirection() {
+    TiltDirection getTargetLocalDirection() {
         // North "Quadrant"
-        if (yawToTarget >= -45 && yawToTarget < 45) {
-            return Direction.NORTH;
+        if (yawToTarget >= -30 && yawToTarget < 30) {
+            return TiltDirection.NORTH;
+        }
+        // Northeast "Quadrant"
+        if (yawToTarget >= 30 && yawToTarget < 60) {
+            return TiltDirection.NORTHEAST;
         }
         // East "Quadrant"
-        else if (yawToTarget >= 45 && yawToTarget < 135) {
-            return Direction.EAST;
+        else if (yawToTarget >= 60 && yawToTarget < 120) {
+            return TiltDirection.EAST;
+        }
+        // Southeast "Quadrant"
+        else if (yawToTarget >= 120 && yawToTarget < 150) {
+            return TiltDirection.SOUTHEAST;
+        }
+        // Northwest "Quadrant"
+        else if (yawToTarget < -30 && yawToTarget >= -60) {
+            return TiltDirection.NORTHWEST;
         }
         // West "Quadrant"
-        else if (yawToTarget < -45 && yawToTarget >= -135) {
-            return Direction.WEST;
+        else if (yawToTarget < -60 && yawToTarget >= -120) {
+            return TiltDirection.WEST;
+        }
+        // Southest "Quadrant"
+        else if (yawToTarget < -120 && yawToTarget >= -150) {
+            return TiltDirection.SOUTHWEST;
         }
         // South "Quadrant"
         else {
-            return Direction.SOUTH;
+            return TiltDirection.SOUTH;
         }
     }
 
@@ -423,7 +448,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                         if (controller.getAnimationState().equals(AnimationState.Stopped)) {
                             aimAndTilt(animationBuilder);
                             lastTurretState = TurretState.AIMING;
-                            //aimingPaused = true;
+                            // aimingPaused = true;
                         } else {
                             animationBuilder.addAnimation(TurretAnimations.FIRING);
                             lastTurretState = TurretState.FIRING;
@@ -474,6 +499,22 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                 case SOUTH:
                     animationBuilder.addAnimation(TurretAnimations.TILT_SOUTH, false);
                     animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTH, true);
+                    break;
+                case NORTHEAST:
+                    animationBuilder.addAnimation(TurretAnimations.TILT_NORTHEAST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_NORTHEAST, true);
+                    break;
+                case SOUTHEAST:
+                    animationBuilder.addAnimation(TurretAnimations.TILT_SOUTHEAST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTHEAST, true);
+                    break;
+                case SOUTHWEST:
+                    animationBuilder.addAnimation(TurretAnimations.TILT_SOUTHWEST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTHWEST, true);
+                    break;
+                case NORTHWEST:
+                    animationBuilder.addAnimation(TurretAnimations.TILT_NORTHWEST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_NORTHWEST, true);
                     break;
             }
         } else {
