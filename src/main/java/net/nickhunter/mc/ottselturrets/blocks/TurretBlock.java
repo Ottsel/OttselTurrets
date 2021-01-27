@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 public class TurretBlock extends HorizontalBlock {
 
     //Collision boxes for each orientation of the turret.
-    protected static final VoxelShape TURRET_UP_AABB = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 8.0D, 10.0D, 8.0D);
+    protected static final VoxelShape TURRET_UP_AABB = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 10.0D, 14.0D);
 
     //Damage type dealt by this turret.
     public final TurretType turretType;

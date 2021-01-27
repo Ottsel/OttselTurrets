@@ -92,6 +92,8 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         public static final String TILTED_SOUTHWEST = "animation.turret_horizontal.tilted_south_west";
         public static final String TILT_NORTHWEST = "animation.turret_horizontal.tilt_north_west";
         public static final String TILTED_NORTHWEST = "animation.turret_horizontal.tilted_north_west";
+
+        public static final String RESET_LEGS = "animation.turret_horizontal.reset_legs";
     }
 
     public TurretTileEntity() {
@@ -147,6 +149,8 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                     pitchToTarget = 0;
                     updateClient(TurretState.SCANNING);
                 }
+            } else {
+                tilt = false;
             }
         }
     }
@@ -312,15 +316,43 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
         // Target is above.
         if (pitchToTarget < -headPitchMax) {
-            pitchToTarget += tiltPitchAmount;
             tiltDirection = localDirectionToTarget.getOpposite();
+            switch (tiltDirection) {
+                default:
+                case NORTH:
+                case EAST:
+                case SOUTH:
+                case WEST:
+                    pitchToTarget += tiltPitchAmount;
+                    break;
+                case NORTHEAST:
+                case SOUTHEAST:
+                case SOUTHWEST:
+                case NORTHWEST:
+                    pitchToTarget += (tiltPitchAmount + 15);
+                    break;
+            }
             tilt = true;
         }
 
         // Target is below.
         else if (pitchToTarget > headPitchMax) {
-            pitchToTarget -= tiltPitchAmount;
             tiltDirection = localDirectionToTarget;
+            switch (tiltDirection) {
+                default:
+                case NORTH:
+                case EAST:
+                case SOUTH:
+                case WEST:
+                    pitchToTarget -= tiltPitchAmount;
+                    break;
+                case NORTHEAST:
+                case SOUTHEAST:
+                case SOUTHWEST:
+                case NORTHWEST:
+                    pitchToTarget -= (tiltPitchAmount + 15);
+                    break;
+            }
             tilt = true;
         }
     }
@@ -408,8 +440,79 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     private <E extends TileEntity & IAnimatable> PlayState predicate(AnimationEvent<E> event) {
         AnimationController controller = event.getController();
+        switch (controller.getName()) {
+            case "leg_controller":
+                animateLegs(controller);
+                return PlayState.CONTINUE;
+            case "head_controller":
+                animateHead(controller);
+                return PlayState.CONTINUE;
+            default:
+                return PlayState.CONTINUE;
+        }
+    }
+
+    private void animateLegs(AnimationController controller) {
         AnimationBuilder animationBuilder = new AnimationBuilder();
 
+        boolean animate = false;
+
+        if (tilt) {
+
+            animationBuilder.addAnimation(TurretAnimations.RESET_LEGS, false);
+            switch (tiltDirection) {
+                case NORTH:
+                default:
+                    if (animate)
+                        animationBuilder.addAnimation(TurretAnimations.TILT_NORTH, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_NORTH, true);
+                    break;
+                case EAST:
+                    if (animate)
+                        animationBuilder.addAnimation(TurretAnimations.TILT_EAST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_EAST, true);
+                    break;
+                case WEST:
+                    if (animate)
+                        animationBuilder.addAnimation(TurretAnimations.TILT_WEST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_WEST, true);
+                    break;
+                case SOUTH:
+                    if (animate)
+                        animationBuilder.addAnimation(TurretAnimations.TILT_SOUTH, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTH, true);
+                    break;
+                case NORTHEAST:
+                    if (animate)
+                        animationBuilder.addAnimation(TurretAnimations.TILT_NORTHEAST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_NORTHEAST, true);
+                    break;
+                case SOUTHEAST:
+                    if (animate)
+                        animationBuilder.addAnimation(TurretAnimations.TILT_SOUTHEAST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTHEAST, true);
+                    break;
+                case SOUTHWEST:
+                    if (animate)
+                        animationBuilder.addAnimation(TurretAnimations.TILT_SOUTHWEST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTHWEST, true);
+                    break;
+                case NORTHWEST:
+                    if (animate)
+                        animationBuilder.addAnimation(TurretAnimations.TILT_NORTHWEST, false);
+                    animationBuilder.addAnimation(TurretAnimations.TILTED_NORTHWEST, true);
+                    break;
+            }
+        } else {
+            if (!controller.getAnimationState().equals(AnimationState.Stopped)) {
+                animationBuilder.addAnimation(TurretAnimations.RESET_LEGS, false);
+            }
+        }
+        controller.setAnimation(animationBuilder);
+    }
+
+    private void animateHead(AnimationController controller) {
+        AnimationBuilder animationBuilder = new AnimationBuilder();
         switch (turretState) {
             case SCANNING:
                 switch (lastTurretState) {
@@ -437,18 +540,17 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
             case AIMING:
                 switch (lastTurretState) {
                     case SCANNING:
-                        aimAndTilt(animationBuilder);
+                        animationBuilder.addAnimation(TurretAnimations.AIMING);
                         lastTurretState = TurretState.AIMING;
                         break;
                     case AIMING:
-                        aimAndTilt(animationBuilder);
+                        animationBuilder.addAnimation(TurretAnimations.AIMING);
                         lastTurretState = TurretState.AIMING;
                         break;
                     case FIRING:
                         if (controller.getAnimationState().equals(AnimationState.Stopped)) {
-                            aimAndTilt(animationBuilder);
+                            animationBuilder.addAnimation(TurretAnimations.AIMING);
                             lastTurretState = TurretState.AIMING;
-                            // aimingPaused = true;
                         } else {
                             animationBuilder.addAnimation(TurretAnimations.FIRING);
                             lastTurretState = TurretState.FIRING;
@@ -474,52 +576,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                 }
                 break;
         }
-
         controller.setAnimation(animationBuilder);
-        return PlayState.CONTINUE;
-
-    }
-
-    private void aimAndTilt(AnimationBuilder animationBuilder) {
-        if (tilt) {
-            switch (tiltDirection) {
-                case NORTH:
-                default:
-                    animationBuilder.addAnimation(TurretAnimations.TILT_NORTH, false);
-                    animationBuilder.addAnimation(TurretAnimations.TILTED_NORTH, true);
-                    break;
-                case EAST:
-                    animationBuilder.addAnimation(TurretAnimations.TILT_EAST, false);
-                    animationBuilder.addAnimation(TurretAnimations.TILTED_EAST, true);
-                    break;
-                case WEST:
-                    animationBuilder.addAnimation(TurretAnimations.TILT_WEST, false);
-                    animationBuilder.addAnimation(TurretAnimations.TILTED_WEST, true);
-                    break;
-                case SOUTH:
-                    animationBuilder.addAnimation(TurretAnimations.TILT_SOUTH, false);
-                    animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTH, true);
-                    break;
-                case NORTHEAST:
-                    animationBuilder.addAnimation(TurretAnimations.TILT_NORTHEAST, false);
-                    animationBuilder.addAnimation(TurretAnimations.TILTED_NORTHEAST, true);
-                    break;
-                case SOUTHEAST:
-                    animationBuilder.addAnimation(TurretAnimations.TILT_SOUTHEAST, false);
-                    animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTHEAST, true);
-                    break;
-                case SOUTHWEST:
-                    animationBuilder.addAnimation(TurretAnimations.TILT_SOUTHWEST, false);
-                    animationBuilder.addAnimation(TurretAnimations.TILTED_SOUTHWEST, true);
-                    break;
-                case NORTHWEST:
-                    animationBuilder.addAnimation(TurretAnimations.TILT_NORTHWEST, false);
-                    animationBuilder.addAnimation(TurretAnimations.TILTED_NORTHWEST, true);
-                    break;
-            }
-        } else {
-            animationBuilder.addAnimation(TurretAnimations.AIMING, true);
-        }
     }
 
     private <ENTITY extends IAnimatable> void instructionListener(CustomInstructionKeyframeEvent<ENTITY> event) {
@@ -540,9 +597,13 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     @Override
     public void registerControllers(AnimationData animationData) {
-        AnimationController controller = new AnimationController(this, "controller", 0, this::predicate);
-        controller.registerCustomInstructionListener(this::instructionListener);
-        animationData.addAnimationController(controller);
+        AnimationController legController = new AnimationController(this, "leg_controller", 3, this::predicate);
+        AnimationController headController = new AnimationController(this, "head_controller", 0, this::predicate);
+
+        headController.registerCustomInstructionListener(this::instructionListener);
+
+        animationData.addAnimationController(legController);
+        animationData.addAnimationController(headController);
     }
 
     @Override
