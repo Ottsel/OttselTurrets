@@ -116,7 +116,7 @@ repositories{
     maven { url 'https://repo.repsy.io/mvn/gandiber/geckolib' }
 }
 dependencies{
-    compile fg.deobf('software.bernie.geckolib:forge-1.15.2-geckolib:3.0.4')
+    compile fg.deobf('software.bernie.geckolib:forge-1.15.2-geckolib:3.0.6')
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
