@@ -54,11 +54,16 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     public TurretState lastTurretState = TurretState.SCANNING;
 
     private boolean chargeSoundHasPlayed;
-    public boolean aimingPaused;
+
+    public boolean lookingAtTarget;
+
 
     public int chargeTimer = -1;
     public int chargeResetTimer = OttselTurrets.TICKS_PER_SECOND * 2;
     public int coolDownTimer = -1;
+
+    public float headRotationYPrev;
+    public float headRotationXPrev;
 
     private final AnimationFactory factory = new AnimationFactory(this);
 
@@ -67,8 +72,9 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     }
 
     public TurretTileEntity(TileEntityType<?> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
-            String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge,
-            double timeToCoolDown, float pitchMax, float headPitchMax) {
+    String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge,
+    double timeToCoolDown, float pitchMax, float headPitchMax) {
+
         super(tileEntityTypeIn);
 
         this.idleAnimation = idleAnimation;
@@ -101,6 +107,8 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                 // Return if still cooling down.
                 if (coolDownTimer != -1) {
                     coolDown();
+
+                    updateClient(TurretState.AIMING);
 
                     return;
                 }
@@ -378,16 +386,16 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
             case AIMING:
                 switch (lastTurretState) {
                     case SCANNING:
-                        animationBuilder.addAnimation(aimingAnimation);
+                        animationBuilder.addAnimation(aimingAnimation, true);
                         lastTurretState = TurretState.AIMING;
                         break;
                     case AIMING:
-                        animationBuilder.addAnimation(aimingAnimation);
+                        animationBuilder.addAnimation(aimingAnimation, true);
                         lastTurretState = TurretState.AIMING;
                         break;
                     case FIRING:
                         if (controller.getAnimationState().equals(AnimationState.Stopped)) {
-                            animationBuilder.addAnimation(aimingAnimation);
+                            animationBuilder.addAnimation(aimingAnimation, true);
                             lastTurretState = TurretState.AIMING;
                         } else {
                             animationBuilder.addAnimation(firingAnimation, false);
@@ -418,7 +426,16 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     private <ENTITY extends IAnimatable> void instructionListener(CustomInstructionKeyframeEvent<ENTITY> event) {
         for (String instruction : event.instructions) {
-            OttselTurrets.LOGGER.debug(instruction);
+            if (instruction.equals("looking_at_target")) {
+                OttselTurrets.LOGGER.debug("looking_at_target");
+                lookingAtTarget = true;
+            }
+            if (instruction.equals("reset_rotation")) {
+                OttselTurrets.LOGGER.debug("reset_rotation");
+                pitchToTarget = 0;
+                yawToTarget = 0;
+                lookingAtTarget = true;
+            }
         }
     }
 

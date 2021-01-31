@@ -19,6 +19,6 @@ public class BallistaTurretTileEntity extends TurretTileEntity {
 
     public BallistaTurretTileEntity() {
         super(TileRegistry.BALLISTA_TURRET.get(), IDLE_ANIMATION, AIMING_ANIMATION, FIRING_ANIMATION, RESET_ANIMATION,
-                RANGE, DAMAGE, CHARGE_TIME, COOLDOWN_TIME, PITCH_MAX, HEAD_PITCH_MAX);
+        RANGE, DAMAGE, CHARGE_TIME, COOLDOWN_TIME, PITCH_MAX, HEAD_PITCH_MAX);
     }
 }

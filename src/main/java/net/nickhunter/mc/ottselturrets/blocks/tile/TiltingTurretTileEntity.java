@@ -12,8 +12,7 @@ import software.bernie.geckolib3.core.controller.AnimationController;
 public class TiltingTurretTileEntity extends TurretTileEntity {
 
     public TiltingTurretTileEntity(TileEntityType<?> tileEntityType, String idleAnimation, String aimingAnimation,
-            String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax) {
-        super(tileEntityType, idleAnimation, aimingAnimation, firingAnimation, resetAnimation, range, damage, timeToCharge, timeToCoolDown, pitchMax, headPitchMax);
+    String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax) {
     }
 
     public float beamLength;

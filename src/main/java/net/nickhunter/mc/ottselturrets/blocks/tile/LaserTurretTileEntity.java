@@ -7,7 +7,6 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
     public static final String AIMING_ANIMATION = "animation.turret_horizontal.rotate_head";
     public static final String FIRING_ANIMATION = "animation.turret_horizontal.fire_beam";
     public static final String RESET_ANIMATION = "animation.turret_horizontal.reset_rotation";
-
     public static final int RANGE = 10;
     public static final int DAMAGE = 20;
     public static final double CHARGE_TIME = 1.5;

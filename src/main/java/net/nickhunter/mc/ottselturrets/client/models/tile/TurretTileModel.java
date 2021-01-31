@@ -3,8 +3,6 @@ package net.nickhunter.mc.ottselturrets.client.models.tile;
 import net.minecraft.util.ResourceLocation;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
-import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity.TurretState;
-import software.bernie.geckolib3.core.processor.IBone;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
@@ -14,36 +12,34 @@ public abstract class TurretTileModel extends AnimatedGeoModel<TurretTileEntity>
     public final String textureLocation;
     public final String animationLocation;
 
-    public final String yawBoneName;
-    public final String pitchBoneName;
+    float pitch = 0;
+    float yaw = 0;
 
-    TurretTileModel(String modelLocation, String textureLocation, String animationLocation, String yawBoneName, String pitchBoneName){
+    TurretTileModel(String modelLocation, String textureLocation, String animationLocation){
 
         this.modelLocation = modelLocation;
         this.textureLocation = textureLocation;
         this.animationLocation = animationLocation;
-
-        this.yawBoneName = yawBoneName;
-        this.pitchBoneName = pitchBoneName;
     }
 
     @Override
     public void setLivingAnimations(TurretTileEntity entity, Integer uniqueID) {
 
+        pitch = entity.pitchToTarget;
+        yaw = entity.yawToTarget;
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_y", yaw);
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_x", pitch);
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_x_prev", entity.headRotationXPrev);
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_y_prev", entity.headRotationYPrev);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x_max", entity.headPitchMax);
+        
+        entity.headRotationXPrev = pitch;
+        entity.headRotationYPrev = yaw;
+        entity.lookingAtTarget = false;
 
         super.setLivingAnimations(entity, uniqueID);
-
-        IBone yawBone = this.getAnimationProcessor().getBone(yawBoneName);
-        IBone pitchBone = this.getAnimationProcessor().getBone(pitchBoneName);
-
-
-        if (entity.turretState != TurretState.SCANNING) {
-            yawBone.setRotationY((float) (entity.yawToTarget * Math.PI / 180));
-            pitchBone.setRotationX((float) (entity.pitchToTarget * Math.PI / 180));
-        }
     }
-    
+
     @Override
     public ResourceLocation getModelLocation(TurretTileEntity tileEntity) {
         return new ResourceLocation(OttselTurrets.MOD_ID, modelLocation);
@@ -53,7 +49,7 @@ public abstract class TurretTileModel extends AnimatedGeoModel<TurretTileEntity>
     public ResourceLocation getTextureLocation(TurretTileEntity tileEntity) {
         return new ResourceLocation(OttselTurrets.MOD_ID, textureLocation);
     }
- 
+
     @Override
     public ResourceLocation getAnimationFileLocation(TurretTileEntity tileEntity) {
         return new ResourceLocation(OttselTurrets.MOD_ID, animationLocation);

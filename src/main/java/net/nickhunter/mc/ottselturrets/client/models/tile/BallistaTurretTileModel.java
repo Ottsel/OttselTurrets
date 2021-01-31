@@ -1,22 +1,12 @@
 package net.nickhunter.mc.ottselturrets.client.models.tile;
 
-import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
-
 public class BallistaTurretTileModel extends TurretTileModel {
 
     public static final String MODEL_LOCATION = "geo/block/turret_ballista.geo.json";
     public static final String TEXTURE_LOCATION = "textures/blocks/turret_ballista.png";
     public static final String ANIMATION_LOCATION = "animations/block/ballista_turret.animation.json";
 
-    public static final String YAW_BONE = "head";
-    public static final String PITCH_BONE = "ballista";
-
     public BallistaTurretTileModel() {
-        super(MODEL_LOCATION, TEXTURE_LOCATION, ANIMATION_LOCATION, YAW_BONE, PITCH_BONE);
-    }
-
-    @Override
-    public void setLivingAnimations(TurretTileEntity entity, Integer uniqueID) {
-        super.setLivingAnimations(entity, uniqueID);
+        super(MODEL_LOCATION, TEXTURE_LOCATION, ANIMATION_LOCATION);
     }
 }
