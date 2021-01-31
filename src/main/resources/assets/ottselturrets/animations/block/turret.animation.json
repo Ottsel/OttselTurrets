@@ -35,15 +35,15 @@
 							"vector": [0, 0, 0]
 						},
 						"0.12": {
-							"vector": [0, 0, "-((beam_length-.5)*8)"],
+							"vector": [0, 0, "-((20-.5)*8)"],
 							"easing": "easeInExpo"
 						},
 						"0.4": {
-							"vector": [0, 0, "-((beam_length-.5)*8)"],
+							"vector": [0, 0, "-((20-.5)*8)"],
 							"easing": "linear"
 						},
 						"0.56": {
-							"vector": [0, 0, "-((beam_length-.5)*16)"],
+							"vector": [0, 0, "-((20-.5)*16)"],
 							"easing": "easeInExpo"
 						},
 						"0.6": {
@@ -57,11 +57,11 @@
 							"vector": [1, 1, 1]
 						},
 						"0.12": {
-							"vector": [1, 1, "(beam_length-.5)*8"],
+							"vector": [1, 1, "(20-.5)*8"],
 							"easing": "easeInExpo"
 						},
 						"0.4": {
-							"vector": [1, 1, "(beam_length-.5)*8"],
+							"vector": [1, 1, "(20-.5)*8"],
 							"easing": "linear"
 						},
 						"0.56": {

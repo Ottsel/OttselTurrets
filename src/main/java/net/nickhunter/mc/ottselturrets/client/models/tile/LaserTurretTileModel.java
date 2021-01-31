@@ -1,9 +1,5 @@
 package net.nickhunter.mc.ottselturrets.client.models.tile;
 
-import net.nickhunter.mc.ottselturrets.blocks.tile.LaserTurretTileEntity;
-import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
-import software.bernie.geckolib3.resource.GeckoLibCache;
-
 public class LaserTurretTileModel extends TurretTileModel {
 
     public static final String MODEL_LOCATION = "geo/block/turret_horizontal.geo.json";
@@ -15,11 +11,5 @@ public class LaserTurretTileModel extends TurretTileModel {
 
     public LaserTurretTileModel() {
         super(MODEL_LOCATION, TEXTURE_LOCATION, ANIMATION_LOCATION, YAW_BONE, PITCH_BONE);
-    }
-
-    @Override
-    public void setLivingAnimations(TurretTileEntity entity, Integer uniqueID) {
-        super.setLivingAnimations(entity, uniqueID);
-        GeckoLibCache.getInstance().parser.setValue("beam_length", ((LaserTurretTileEntity) entity).beamLength);
     }
 }
