@@ -1,17 +1,17 @@
 package net.nickhunter.mc.ottselturrets.registry;
 
-import net.minecraftforge.fml.client.registry.RenderingRegistry;
-import net.nickhunter.mc.ottselturrets.client.renderers.entity.DartRenderer;
-import net.nickhunter.mc.ottselturrets.client.renderers.tile.TurretTileRenderer;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.nickhunter.mc.ottselturrets.client.models.tile.BallistaTurretTileModel;
+import net.nickhunter.mc.ottselturrets.client.models.tile.LaserTurretTileModel;
+import net.nickhunter.mc.ottselturrets.client.renderers.tile.TurretTileRenderer;
 
 public class RendererRegistry {
-    public static void init(){
+    public static void init() {
 
-        //TileEntities
-        ClientRegistry.bindTileEntityRenderer(TileRegistry.TURRET.get(), TurretTileRenderer::new);
-
-        //Entities
-        RenderingRegistry.registerEntityRenderingHandler(EntityRegistry.DART.get(), DartRenderer::new);
+        // TileEntities
+        ClientRegistry.bindTileEntityRenderer(TileRegistry.LASER_TURRET.get(),
+                (rendererDispatcherIn) -> new TurretTileRenderer(rendererDispatcherIn, new LaserTurretTileModel()));
+        ClientRegistry.bindTileEntityRenderer(TileRegistry.BALLISTA_TURRET.get(),
+                (rendererDispatcherIn) -> new TurretTileRenderer(rendererDispatcherIn, new BallistaTurretTileModel()));
     }
 }

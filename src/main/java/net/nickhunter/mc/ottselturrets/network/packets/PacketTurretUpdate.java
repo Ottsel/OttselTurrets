@@ -16,9 +16,7 @@ public class PacketTurretUpdate extends OttselPacket {
         readPayload(buffer);
     }
 
-    public PacketTurretUpdate(
-            final TurretState turretState,
-            final BlockPos pos) {
+    public PacketTurretUpdate(final TurretState turretState, final BlockPos pos) {
         this.turretState = turretState;
         this.pos = pos;
     }
@@ -33,10 +31,10 @@ public class PacketTurretUpdate extends OttselPacket {
         if (world != null) {
             TileEntity tileEntity = Minecraft.getInstance().world.getChunkAt(pos).getTileEntity(pos);
             if (tileEntity != null) {
-                if (tileEntity.getType() == TileRegistry.TURRET.get()) {
-                    TurretTileEntity turret = (TurretTileEntity) tileEntity;
-                    turret.turretState = turretState;
-                }
+                // if (tileEntity.getType() == TileRegistry.LASER_TURRET.get()) {
+                TurretTileEntity turret = (TurretTileEntity) tileEntity;
+                turret.turretState = turretState;
+                // }
             }
         }
     }

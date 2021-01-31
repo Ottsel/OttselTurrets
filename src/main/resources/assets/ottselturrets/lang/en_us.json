@@ -1,5 +1,8 @@
 {
   "itemGroup.ottselturrets": "Ottsel's Turrets",
+
   "block.ottselturrets.laser_turret": "Laser Turret",
+  "block.ottselturrets.ballista_turret": "Ballista Turret",
+
   "entity.ottselturrets.laser_dart": "Laser Dart"
 }

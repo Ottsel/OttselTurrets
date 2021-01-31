@@ -9,6 +9,7 @@ public enum PacketTypes {
     TURRET_UPDATE((channel, integer) -> {
         channel.registerMessage(integer, PacketTurretUpdate.class, PacketTurretUpdate::new);
     });
+
     private final BiConsumer<NetworkChannel, Integer> registrationHandler;
 
     private static HashMap<Class<? extends OttselPacket>, Integer> fromClassToId = new HashMap<Class<? extends OttselPacket>, Integer>();
@@ -26,13 +27,11 @@ public enum PacketTypes {
         }
     }
 
-    public static int getID(
-            final Class<? extends OttselPacket> clz) {
+    public static int getID(final Class<? extends OttselPacket> clz) {
         return fromClassToId.get(clz);
     }
 
-    public static OttselPacket constructByID(
-            final int id) throws InstantiationException, IllegalAccessException {
+    public static OttselPacket constructByID(final int id) throws InstantiationException, IllegalAccessException {
         return fromIdToClass.get(id).newInstance();
     }
 

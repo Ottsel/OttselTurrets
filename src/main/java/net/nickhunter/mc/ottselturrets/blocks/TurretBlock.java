@@ -1,5 +1,8 @@
 package net.nickhunter.mc.ottselturrets.blocks;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
@@ -7,42 +10,34 @@ import net.minecraft.block.HorizontalBlock;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.state.StateContainer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
-import net.nickhunter.mc.ottselturrets.TurretType;
 import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import net.nickhunter.mc.ottselturrets.items.TurretBlockItem;
+import software.bernie.geckolib3.model.AnimatedGeoModel;
 
 public class TurretBlock extends HorizontalBlock {
 
-    //Collision boxes for each orientation of the turret.
-    protected static final VoxelShape TURRET_UP_AABB = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 10.0D, 14.0D);
+    public final VoxelShape hitboxAABB;
+    public final String resourceName;
+    public final AnimatedGeoModel<TurretBlockItem> itemModel;
+    public final AnimatedGeoModel<TurretTileEntity> tileModel;
 
-    //Damage type dealt by this turret.
-    public final TurretType turretType;
-
-    public TurretBlock(TurretType turretType) {
-        super(Properties.create(Material.IRON)
-                .notSolid()
-        );
-        this.turretType = turretType;
+    public TurretBlock(Material material, String resourceName, AnimatedGeoModel<TurretBlockItem> itemModel,
+            AnimatedGeoModel<TurretTileEntity> tileModel, VoxelShape hitboxAABB) {
+        super(Properties.create(material).notSolid());
+        this.resourceName = resourceName;
+        this.itemModel = itemModel;
+        this.tileModel = tileModel;
+        this.hitboxAABB = hitboxAABB;
     }
 
     @Override
     public boolean hasTileEntity(BlockState state) {
         return true;
-    }
-
-    @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new TurretTileEntity(turretType);
     }
 
     @Nonnull
@@ -55,10 +50,10 @@ public class TurretBlock extends HorizontalBlock {
         builder.add(HORIZONTAL_FACING);
     }
 
-    //Set collision box according to orientation.
     @Nonnull
-    public VoxelShape getShape(BlockState state, @Nonnull IBlockReader worldIn, @Nonnull BlockPos pos, @Nonnull ISelectionContext context) {
-        return TURRET_UP_AABB;
+    public VoxelShape getShape(BlockState state, @Nonnull IBlockReader worldIn, @Nonnull BlockPos pos,
+            @Nonnull ISelectionContext context) {
+        return hitboxAABB;
     }
 
     @Nonnull

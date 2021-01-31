@@ -9,8 +9,7 @@ import net.nickhunter.mc.ottselturrets.OttselTurrets;
 
 @Mod.EventBusSubscriber(modid = OttselTurrets.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public enum SoundRegistry {
-    LASER_CHARGE("laser_charge"),
-    LASER_BOLT("laser_bolt");
+    LASER_CHARGE("laser_charge"), LASER_BOLT("laser_bolt");
 
     private SoundEvent sound;
 

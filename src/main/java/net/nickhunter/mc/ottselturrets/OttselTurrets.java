@@ -18,7 +18,7 @@ public class OttselTurrets {
     public static final String MOD_ID = "ottselturrets";
     public static final String VERSION = "0.1.0a";
     public static final Logger LOGGER = LogManager.getLogger();
-    private final  NetworkChannel networkChannel = new NetworkChannel(MOD_ID);
+    private final NetworkChannel networkChannel = new NetworkChannel(MOD_ID);
     public static final int TICKS_PER_SECOND = 20;
 
     public OttselTurrets() {
@@ -34,6 +34,7 @@ public class OttselTurrets {
         EntityRegistry.init();
         networkChannel.registerCommonMessages();
     }
+
     public static NetworkChannel getNetworkChannel() {
         return instance.networkChannel;
     }
