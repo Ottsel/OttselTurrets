@@ -1,6 +1,7 @@
 package net.nickhunter.mc.ottselturrets.network.packets;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -8,8 +9,6 @@ import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
 import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity.TurretState;
 import net.nickhunter.mc.ottselturrets.network.OttselPacket;
-import net.minecraft.network.PacketBuffer;
-import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
 
 public class PacketTurretUpdate extends OttselPacket {
     public PacketTurretUpdate(PacketBuffer buffer) {

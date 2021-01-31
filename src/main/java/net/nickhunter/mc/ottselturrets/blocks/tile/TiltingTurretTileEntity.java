@@ -11,8 +11,8 @@ import software.bernie.geckolib3.core.controller.AnimationController;
 public class TiltingTurretTileEntity extends TurretTileEntity {
 
     public TiltingTurretTileEntity(TileEntityType<?> tileEntityType, String idleAnimation, String aimingAnimation,
-            String firingAnimation, String resetAnimation) {
-        super(tileEntityType, idleAnimation, aimingAnimation, firingAnimation, resetAnimation);
+    String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax) {
+        super(tileEntityType, idleAnimation, aimingAnimation, firingAnimation, resetAnimation, range, damage, timeToCharge, timeToCoolDown, pitchMax, headPitchMax);
     }
 
     public float beamLength;
@@ -20,7 +20,7 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
     public TiltDirection localDirectionToTarget, tiltDirection;
     public boolean tilt;
 
-    float tiltPitchAmount;
+    float tiltPitchAmount = 30;
 
     public static final String TILT_NORTH = "animation.turret_horizontal.tilt_north";
     public static final String TILTED_NORTH = "animation.turret_horizontal.tilted_north";
@@ -45,10 +45,7 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
     @Override
     protected void clientTrackTarget(Vec3d target) {
         super.clientTrackTarget(target);
-
-        if (aimingPaused)
-            return;
-
+        
         localDirectionToTarget = getTargetLocalDirection();
         tilt = false;
 
