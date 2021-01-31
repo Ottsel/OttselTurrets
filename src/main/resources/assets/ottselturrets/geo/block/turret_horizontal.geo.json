@@ -21,13 +21,8 @@
 					"pivot": [0, 14.02028, 0]
 				},
 				{
-					"name": "head_kick",
-					"parent": "head",
-					"pivot": [0, 14.02028, 0]
-				},
-				{
 					"name": "slide",
-					"parent": "head_kick",
+					"parent": "head",
 					"pivot": [0.325, 2.19316, -4.375],
 					"cubes": [
 						{"origin": [-1, 12.19316, -15.75], "size": [2, 4, 12.75], "uv": [19, 23]},
@@ -36,7 +31,7 @@
 				},
 				{
 					"name": "barrel",
-					"parent": "head_kick",
+					"parent": "head",
 					"pivot": [0.05, 2.19316, -1.975]
 				},
 				{
@@ -114,7 +109,7 @@
 				},
 				{
 					"name": "skull",
-					"parent": "head_kick",
+					"parent": "head",
 					"pivot": [-0.32, 13.04316, -1.02559],
 					"cubes": [
 						{"origin": [-4.925, 12.84316, -4.00195], "size": [0.5, 2, 4], "uv": [35, 51]},
