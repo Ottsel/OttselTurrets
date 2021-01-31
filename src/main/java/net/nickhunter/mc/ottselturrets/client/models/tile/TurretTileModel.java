@@ -12,20 +12,14 @@ public abstract class TurretTileModel extends AnimatedGeoModel<TurretTileEntity>
     public final String textureLocation;
     public final String animationLocation;
 
-    public final String yawBoneName;
-    public final String pitchBoneName;
-
     float pitch = 0;
     float yaw = 0;
 
-    TurretTileModel(String modelLocation, String textureLocation, String animationLocation, String yawBoneName, String pitchBoneName){
+    TurretTileModel(String modelLocation, String textureLocation, String animationLocation){
 
         this.modelLocation = modelLocation;
         this.textureLocation = textureLocation;
         this.animationLocation = animationLocation;
-
-        this.yawBoneName = yawBoneName;
-        this.pitchBoneName = pitchBoneName;
     }
 
     @Override

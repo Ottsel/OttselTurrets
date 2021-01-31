@@ -54,7 +54,9 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     public TurretState lastTurretState = TurretState.SCANNING;
 
     private boolean chargeSoundHasPlayed;
+
     public boolean lookingAtTarget;
+
 
     public int chargeTimer = -1;
     public int chargeResetTimer = OttselTurrets.TICKS_PER_SECOND * 2;
@@ -72,7 +74,9 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     public TurretTileEntity(TileEntityType<?> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
     String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge,
     double timeToCoolDown, float pitchMax, float headPitchMax) {
+
         super(tileEntityTypeIn);
+
         this.idleAnimation = idleAnimation;
         this.aimingAnimation = aimingAnimation;
         this.firingAnimation = firingAnimation;
@@ -104,8 +108,8 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                 if (coolDownTimer != -1) {
                     coolDown();
 
-                    // Reset the turret's rotation.
                     updateClient(TurretState.AIMING);
+
                     return;
                 }
                 // Tell the client to aim at the target, then charge up the turret.
@@ -123,8 +127,6 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                     resetTimer();
                 } else { // If the charge expires...
                     // Reset the turret's rotation.
-                    yawToTarget = 0;
-                    pitchToTarget = 0;
                     updateClient(TurretState.SCANNING);
                 }
             } else {
@@ -272,12 +274,12 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     private float getYaw(Vec3d diffPos) {
         return (float) MathHelper.wrapDegrees(
-                MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
+                MathHelper.atan2(-diffPos.z, diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset() + 90);
     }
 
     private float getPitch(Vec3d diffPos) {
         double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
-        float pitch = (float) MathHelper
+        float pitch = (float) -MathHelper
                 .wrapDegrees((MathHelper.atan2(-horizComponent, diffPos.y) * (double) (180F / (float) Math.PI) + 90));
         if (pitch > pitchMax)
             pitch = pitchMax;
@@ -295,27 +297,27 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         }
         // Northeast "Quadrant"
         if (yawToTarget >= 30 && yawToTarget < 60) {
-            return TiltDirection.NORTHEAST;
+            return TiltDirection.NORTHWEST;
         }
         // East "Quadrant"
         else if (yawToTarget >= 60 && yawToTarget < 120) {
-            return TiltDirection.EAST;
+            return TiltDirection.WEST;
         }
         // Southeast "Quadrant"
         else if (yawToTarget >= 120 && yawToTarget < 150) {
-            return TiltDirection.SOUTHEAST;
+            return TiltDirection.SOUTHWEST;
         }
         // Northwest "Quadrant"
         else if (yawToTarget < -30 && yawToTarget >= -60) {
-            return TiltDirection.NORTHWEST;
+            return TiltDirection.NORTHEAST;
         }
         // West "Quadrant"
         else if (yawToTarget < -60 && yawToTarget >= -120) {
-            return TiltDirection.WEST;
+            return TiltDirection.EAST;
         }
         // Southest "Quadrant"
         else if (yawToTarget < -120 && yawToTarget >= -150) {
-            return TiltDirection.SOUTHWEST;
+            return TiltDirection.SOUTHEAST;
         }
         // South "Quadrant"
         else {
@@ -327,13 +329,13 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         switch (this.getBlockState().get(HORIZONTAL_FACING)) {
             case NORTH:
             default:
-                return 90;
-            case SOUTH:
-                return -90;
-            case EAST:
                 return 0;
-            case WEST:
+            case SOUTH:
                 return 180;
+            case EAST:
+                return 90;
+            case WEST:
+                return -90;
         }
     }
 
@@ -439,7 +441,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     @Override
     public void registerControllers(AnimationData animationData) {
-        AnimationController legController = new AnimationController(this, "leg_controller", 3, this::predicate);
+        AnimationController legController = new AnimationController(this, "leg_controller", 6, this::predicate);
         AnimationController headController = new AnimationController(this, "head_controller", 0, this::predicate);
 
         headController.registerCustomInstructionListener(this::instructionListener);
