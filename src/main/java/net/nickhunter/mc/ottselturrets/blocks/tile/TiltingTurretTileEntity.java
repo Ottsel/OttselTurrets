@@ -2,7 +2,6 @@ package net.nickhunter.mc.ottselturrets.blocks.tile;
 
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.Vec3d;
-import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.util.TiltDirection;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -13,6 +12,7 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
 
     public TiltingTurretTileEntity(TileEntityType<?> tileEntityType, String idleAnimation, String aimingAnimation,
     String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax) {
+        super(tileEntityType, idleAnimation, aimingAnimation, firingAnimation, resetAnimation, range, damage, timeToCharge, timeToCoolDown, pitchMax, headPitchMax);
     }
 
     public float beamLength;
@@ -45,34 +45,13 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
     @Override
     protected void clientTrackTarget(Vec3d target) {
         super.clientTrackTarget(target);
-
+        
         localDirectionToTarget = getTargetLocalDirection();
         tilt = false;
 
         // Target is above.
-        if (pitchToTarget > headPitchMax) {
+        if (pitchToTarget < -headPitchMax) {
             tiltDirection = localDirectionToTarget.getOpposite();
-            switch (tiltDirection) {
-                default:
-                case NORTH:
-                case EAST:
-                case SOUTH:
-                case WEST:
-                    pitchToTarget -= tiltPitchAmount;
-                    break;
-                case NORTHEAST:
-                case SOUTHEAST:
-                case SOUTHWEST:
-                case NORTHWEST:
-                    pitchToTarget -= (tiltPitchAmount + 15);
-                    break;
-            }
-            tilt = true;
-        }
-
-        // Target is below.
-        else if (pitchToTarget < -headPitchMax) {
-            tiltDirection = localDirectionToTarget;
             switch (tiltDirection) {
                 default:
                 case NORTH:
@@ -89,7 +68,27 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
                     break;
             }
             tilt = true;
+        }
 
+        // Target is below.
+        else if (pitchToTarget > headPitchMax) {
+            tiltDirection = localDirectionToTarget;
+            switch (tiltDirection) {
+                default:
+                case NORTH:
+                case EAST:
+                case SOUTH:
+                case WEST:
+                    pitchToTarget -= tiltPitchAmount;
+                    break;
+                case NORTHEAST:
+                case SOUTHEAST:
+                case SOUTHWEST:
+                case NORTHWEST:
+                    pitchToTarget -= (tiltPitchAmount + 15);
+                    break;
+            }
+            tilt = true;
         }
     }
 
