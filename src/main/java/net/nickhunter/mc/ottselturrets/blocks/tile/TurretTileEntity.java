@@ -5,12 +5,9 @@ import static net.minecraft.state.properties.BlockStateProperties.HORIZONTAL_FAC
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
@@ -43,14 +40,12 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     public final String firingAnimation;
     public final String resetAnimation;
 
-    public static final int range = 10;
-    public static final int damage = 20;
-    public static final double timeToCharge = 1.5;
-    public static final double timeToCoolDown = 2.0;
-    public int chargeResetTime = OttselTurrets.TICKS_PER_SECOND * 2;
-
-    public static final float pitchMax = 45;
-    public static final float headPitchMax = 15;
+    public final int range;
+    public final int damage;
+    public final double timeToCharge;
+    public final double timeToCoolDown;
+    public final float pitchMax;
+    public final float headPitchMax;
 
     public float yawToTarget;
     public float pitchToTarget;
@@ -59,11 +54,11 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     public TurretState lastTurretState = TurretState.SCANNING;
 
     private boolean chargeSoundHasPlayed;
-    public boolean lookingAtTarget;
     public boolean aimingPaused;
 
-    public int chargeTime = -1;
-    public int coolDownTime = -1;
+    public int chargeTimer = -1;
+    public int chargeResetTimer = OttselTurrets.TICKS_PER_SECOND * 2;
+    public int coolDownTimer = -1;
 
     private final AnimationFactory factory = new AnimationFactory(this);
 
@@ -72,12 +67,22 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     }
 
     public TurretTileEntity(TileEntityType<?> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
-            String firingAnimation, String resetAnimation) {
+            String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge,
+            double timeToCoolDown, float pitchMax, float headPitchMax) {
         super(tileEntityTypeIn);
+
         this.idleAnimation = idleAnimation;
         this.aimingAnimation = aimingAnimation;
         this.firingAnimation = firingAnimation;
         this.resetAnimation = resetAnimation;
+
+        this.range = range;
+        this.damage = damage;
+        this.timeToCharge = timeToCharge;
+        this.timeToCoolDown = timeToCoolDown;
+        this.pitchMax = pitchMax;
+        this.headPitchMax = headPitchMax;
+
         this.markDirty();
     }
 
@@ -94,11 +99,9 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                 clientTrackTarget(target.getPositionVec());
             } else { // On server...
                 // Return if still cooling down.
-                if (coolDownTime != -1) {
+                if (coolDownTimer != -1) {
                     coolDown();
 
-                    // Reset the turret's rotation.
-                    updateClient(TurretState.SCANNING);
                     return;
                 }
                 // Tell the client to aim at the target, then charge up the turret.
@@ -108,16 +111,14 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         } else { // If there are no potential targets...
             if (!world.isRemote) { // On server...
                 // Cool down if applicable.
-                if (coolDownTime != -1) {
+                if (coolDownTimer != -1) {
                     coolDown();
                 }
                 // Count down the charge reset timer if the turret has started to charge up...
-                if (chargeTime != -1) {
+                if (chargeTimer != -1) {
                     resetTimer();
                 } else { // If the charge expires...
                     // Reset the turret's rotation.
-                    yawToTarget = 0;
-                    pitchToTarget = 0;
                     updateClient(TurretState.SCANNING);
                 }
             } else {
@@ -134,8 +135,8 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
      * Acts as a timer to determine if the turret is charged up and can fire.
      */
     private void chargeUp(LivingEntity target) {
-        if (chargeTime < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) { // If the turret is still charging up...
-            chargeTime++;
+        if (chargeTimer < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) { // If the turret is still charging up...
+            chargeTimer++;
 
             // Return if the charge sound has already been played. TODO Sound event
             if (chargeSoundHasPlayed)
@@ -151,7 +152,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
             coolDown();
 
             // Reset the charge time and charge sound flag.
-            chargeTime = -1;
+            chargeTimer = -1;
             chargeSoundHasPlayed = false;
 
         }
@@ -176,10 +177,10 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
      * Acts as a cool down timer for the turret
      */
     private void coolDown() {
-        if (coolDownTime < timeToCoolDown * OttselTurrets.TICKS_PER_SECOND - 1) { // If the turret is cooling down...
-            coolDownTime++;
+        if (coolDownTimer < timeToCoolDown * OttselTurrets.TICKS_PER_SECOND - 1) { // If the turret is cooling down...
+            coolDownTimer++;
         } else { // If the turret is done cooling down...
-            coolDownTime = -1;
+            coolDownTimer = -1;
         }
     }
 
@@ -187,14 +188,14 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
      * Acts as a timer for expiring the turret's charge.
      */
     private void resetTimer() {
-        if (chargeResetTime == 0) { // If the turret's reset timer is done...
+        if (chargeResetTimer == 0) { // If the turret's reset timer is done...
 
             // Reset the charge.
-            chargeTime = -1;
+            chargeTimer = -1;
             chargeSoundHasPlayed = false;
-            chargeResetTime = OttselTurrets.TICKS_PER_SECOND * 2;
+            chargeResetTimer = OttselTurrets.TICKS_PER_SECOND * 2;
         } else { // If the turret's reset timer is not done...
-            chargeResetTime--;
+            chargeResetTimer--;
         }
     }
 
@@ -250,21 +251,12 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                     world.getChunkAt(pos));
     }
 
-    @Override
-    @Nonnull
-    public CompoundNBT getUpdateTag() {
-        return write(new CompoundNBT());
-    }
-
     /*
      * Client
      */
 
     // Tracks the target position every tick.
     protected void clientTrackTarget(Vec3d target) {
-
-        if (aimingPaused)
-            return;
 
         Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
         yawToTarget = getYaw(diffPos);
@@ -274,12 +266,12 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     private float getYaw(Vec3d diffPos) {
         return (float) MathHelper.wrapDegrees(
-                MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
+                MathHelper.atan2(-diffPos.z, diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset() + 90);
     }
 
     private float getPitch(Vec3d diffPos) {
         double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
-        float pitch = (float) MathHelper
+        float pitch = (float) -MathHelper
                 .wrapDegrees((MathHelper.atan2(-horizComponent, diffPos.y) * (double) (180F / (float) Math.PI) + 90));
         if (pitch > pitchMax)
             pitch = pitchMax;
@@ -288,7 +280,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         return pitch;
     }
 
-    // Returns the rough cardinal direaction of the target (RELATIVE TO THE TURRET).
+    // Returns the rough cardinal direction of the target (RELATIVE TO THE TURRET).
     // Might add intercardinal directions later.
     TiltDirection getTargetLocalDirection() {
         // North "Quadrant"
@@ -297,27 +289,27 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         }
         // Northeast "Quadrant"
         if (yawToTarget >= 30 && yawToTarget < 60) {
-            return TiltDirection.NORTHEAST;
+            return TiltDirection.NORTHWEST;
         }
         // East "Quadrant"
         else if (yawToTarget >= 60 && yawToTarget < 120) {
-            return TiltDirection.EAST;
+            return TiltDirection.WEST;
         }
         // Southeast "Quadrant"
         else if (yawToTarget >= 120 && yawToTarget < 150) {
-            return TiltDirection.SOUTHEAST;
+            return TiltDirection.SOUTHWEST;
         }
         // Northwest "Quadrant"
         else if (yawToTarget < -30 && yawToTarget >= -60) {
-            return TiltDirection.NORTHWEST;
+            return TiltDirection.NORTHEAST;
         }
         // West "Quadrant"
         else if (yawToTarget < -60 && yawToTarget >= -120) {
-            return TiltDirection.WEST;
+            return TiltDirection.EAST;
         }
         // Southest "Quadrant"
         else if (yawToTarget < -120 && yawToTarget >= -150) {
-            return TiltDirection.SOUTHWEST;
+            return TiltDirection.SOUTHEAST;
         }
         // South "Quadrant"
         else {
@@ -329,13 +321,13 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         switch (this.getBlockState().get(HORIZONTAL_FACING)) {
             case NORTH:
             default:
-                return 90;
-            case SOUTH:
-                return -90;
-            case EAST:
                 return 0;
-            case WEST:
+            case SOUTH:
                 return 180;
+            case EAST:
+                return 90;
+            case WEST:
+                return -90;
         }
     }
 
@@ -377,7 +369,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                             animationBuilder.addAnimation(idleAnimation, true);
                             lastTurretState = TurretState.SCANNING;
                         } else {
-                            animationBuilder.addAnimation(firingAnimation);
+                            animationBuilder.addAnimation(firingAnimation, false);
                             lastTurretState = TurretState.FIRING;
                         }
                         break;
@@ -398,7 +390,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                             animationBuilder.addAnimation(aimingAnimation);
                             lastTurretState = TurretState.AIMING;
                         } else {
-                            animationBuilder.addAnimation(firingAnimation);
+                            animationBuilder.addAnimation(firingAnimation, false);
                             lastTurretState = TurretState.FIRING;
                         }
                         break;
@@ -411,7 +403,6 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
                         lastTurretState = TurretState.SCANNING;
                         break;
                     case AIMING:
-                        aimingPaused = true;
                         animationBuilder.addAnimation(firingAnimation, false);
                         lastTurretState = TurretState.FIRING;
                         break;
@@ -427,23 +418,13 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     private <ENTITY extends IAnimatable> void instructionListener(CustomInstructionKeyframeEvent<ENTITY> event) {
         for (String instruction : event.instructions) {
-            if (instruction.equals("looking_at_target")) {
-                OttselTurrets.LOGGER.debug("looking_at_target");
-                lookingAtTarget = true;
-            }
-            if (instruction.equals("reset_rotation")) {
-                OttselTurrets.LOGGER.debug("reset_rotation");
-                pitchToTarget = 0;
-                yawToTarget = 0;
-                lookingAtTarget = true;
-                aimingPaused = false;
-            }
+            OttselTurrets.LOGGER.debug(instruction);
         }
     }
 
     @Override
     public void registerControllers(AnimationData animationData) {
-        AnimationController legController = new AnimationController(this, "leg_controller", 3, this::predicate);
+        AnimationController legController = new AnimationController(this, "leg_controller", 6, this::predicate);
         AnimationController headController = new AnimationController(this, "head_controller", 0, this::predicate);
 
         headController.registerCustomInstructionListener(this::instructionListener);

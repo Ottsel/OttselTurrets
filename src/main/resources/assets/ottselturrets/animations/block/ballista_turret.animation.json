@@ -604,26 +604,6 @@
 						}
 					}
 				},
-				"head": {
-					"rotation": {
-						"0.0": {
-							"vector": [0, "head_rotation_y", 0]
-						},
-						"0.12": {
-							"vector": [0, "head_rotation_y", 0],
-							"easing": "easeInExpo"
-						},
-						"0.52": {
-							"vector": [0, "head_rotation_y", 0],
-							"easing": "easeInExpo"
-						},
-						"1.04": {
-							"vector": [0, "head_rotation_y", 0],
-							"easing": "easeInElastic",
-							"easingArgs": [3]
-						}
-					}
-				},
 				"ballista": {
 					"rotation": {
 						"0.0": {
@@ -671,55 +651,12 @@
 				}
 			}
 		},
+		"animation.ballista_turret.reset_rotation": {
+			"animation_length": 0.52
+		},
 		"animation.ballista_turret.rotate_head": {
 			"loop": true,
-			"animation_length": 0.52,
-			"bones": {
-				"head": {
-					"rotation": {
-						"0.0": {
-							"vector": [0, "head_rotation_y_prev", 0]
-						},
-						"0.52": {
-							"vector": [0, "head_rotation_y", 0],
-							"easing": "easeInOutSine"
-						}
-					}
-				},
-				"ballista": {
-					"rotation": {
-						"0.0": {
-							"vector": ["head_rotation_x_prev", 0, 0]
-						},
-						"0.52": {
-							"vector": ["head_rotation_x", 0, 0],
-							"easing": "easeInOutSine"
-						}
-					}
-				}
-			},
-			"timeline": {
-				"0.48": ["looking_at_target"]
-			}
-		},
-		"animation.ballista_turret.reset_rotation": {
-			"animation_length": 0.52,
-			"bones": {
-				"head": {
-					"rotation": {
-						"0.0": {
-							"vector": ["head_rotation_x", "head_rotation_y ", 0]
-						},
-						"0.52": {
-							"vector": [0, 0, 0],
-							"easing": "easeInOutSine"
-						}
-					}
-				}
-			},
-			"timeline": {
-				"0.48": ["reset_rotation"]
-			}
+			"animation_length": 0.52
 		}
 	},
 	"geckolib_format_version": 2
