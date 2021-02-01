@@ -33,14 +33,14 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
     private void setBeamLength(Vec3d targetPos) {
         if (world == null)
             return;
-        Vec3d posVec = new Vec3d(this.pos.getX() + .5, this.pos.getY() + 1, this.pos.getZ() + .5);
-        Vec3d posOffset = posVec.subtract(targetPos);
-        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec.add(posOffset), targetPos,
-                RayTraceContext.BlockMode.OUTLINE, RayTraceContext.FluidMode.NONE, null));
+        Vec3d posVec = new Vec3d(this.pos.getX()+.5f, this.pos.getY()+1f, this.pos.getZ()+.5f);
+        Vec3d posDiff = targetPos.add(targetOffset).subtract(posVec);
+        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec, posDiff.scale(256),
+                RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
         if (result.getType() == RayTraceResult.Type.MISS) {
             beamLength = 256;
-        } else {
-            beamLength = (float) posVec.distanceTo(result.getHitVec());
+        } else if (result.getType() == RayTraceResult.Type.BLOCK) {
+            beamLength = (float) posVec.distanceTo(result.getHitVec()) - .9f;
         }
     }
 }

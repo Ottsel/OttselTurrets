@@ -2,6 +2,7 @@ package net.nickhunter.mc.ottselturrets.blocks.tile;
 
 import static net.minecraft.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,6 +17,8 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
@@ -34,6 +37,8 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 @SuppressWarnings("rawtypes")
 public class TurretTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable {
+
+    protected static final Vec3d targetOffset = new Vec3d(0, 1f, 0);
 
     public final String idleAnimation;
     public final String aimingAnimation;
@@ -70,8 +75,8 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     }
 
     public TurretTileEntity(TileEntityType<?> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
-    String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge,
-    double timeToCoolDown, float pitchMax, float headPitchMax) {
+            String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge,
+            double timeToCoolDown, float pitchMax, float headPitchMax) {
         super(tileEntityTypeIn);
         this.idleAnimation = idleAnimation;
         this.aimingAnimation = aimingAnimation;
@@ -226,16 +231,35 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
         // Find entities around this tile entity.
         List<LivingEntity> entities = Collections.emptyList();
-        if (world != null) {
-            entities = world.getEntitiesWithinAABB(MobEntity.class, area);
-        }
-        return entities;
+
+        entities = world.getEntitiesWithinAABB(MobEntity.class, area);
+        List<LivingEntity> validTargets = new ArrayList<LivingEntity>(entities);
+        entities.forEach((entity) -> {
+
+            RayTraceResult result = rayTraceToTarget(entity.getPositionVec());
+            float pitch = getPitch(entity.getPositionVec());
+
+            if (result.getType() == RayTraceResult.Type.BLOCK) {
+                validTargets.remove(entity);
+            } else if (pitch > pitchMax) {
+                validTargets.remove(entity);
+            } else if (pitch < -pitchMax) {
+                validTargets.remove(entity);
+            }
+        });
+        return validTargets;
+    }
+
+    protected RayTraceResult rayTraceToTarget(Vec3d target) {
+        Vec3d posVec = new Vec3d(this.pos.getX() + .5f, this.pos.getY() + 1f, this.pos.getZ() + .5f);
+        return world.rayTraceBlocks(new RayTraceContext(posVec, target.add(targetOffset),
+                RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
     }
 
     private LivingEntity getClosestTarget(List<LivingEntity> targets) {
 
         LivingEntity target = targets.get(0);
-        double shortestDist = 42069;
+        double shortestDist = range;
 
         for (LivingEntity entity : targets) {
             Vec3d entityPos = entity.getPositionVec();
@@ -263,26 +287,21 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     // Tracks the target position every tick.
     protected void clientTrackTarget(Vec3d target) {
-
-        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
-        yawToTarget = getYaw(diffPos);
-        pitchToTarget = getPitch(diffPos);
-
+        yawToTarget = getYaw(target);
+        pitchToTarget = getPitch(target);
     }
 
-    private float getYaw(Vec3d diffPos) {
+    private float getYaw(Vec3d target) {
+        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
         return (float) MathHelper.wrapDegrees(
                 MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
     }
 
-    private float getPitch(Vec3d diffPos) {
+    private float getPitch(Vec3d target) {
+        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
         double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
         float pitch = (float) MathHelper
                 .wrapDegrees((MathHelper.atan2(-horizComponent, diffPos.y) * (double) (180F / (float) Math.PI) + 90));
-        if (pitch > pitchMax)
-            pitch = pitchMax;
-        else if (pitch < -pitchMax)
-            pitch = -pitchMax;
         return pitch;
     }
 
