@@ -30,10 +30,10 @@ public class PacketTurretUpdate extends OttselPacket {
         if (world != null) {
             TileEntity tileEntity = Minecraft.getInstance().world.getChunkAt(pos).getTileEntity(pos);
             if (tileEntity != null) {
-                // if (tileEntity.getType() == TileRegistry.LASER_TURRET.get()) {
-                TurretTileEntity turret = (TurretTileEntity) tileEntity;
-                turret.turretState = turretState;
-                // }
+                if (tileEntity instanceof TurretTileEntity) {
+                    TurretTileEntity turret = (TurretTileEntity) tileEntity;
+                    turret.setTurretState(turretState);
+                }
             }
         }
     }

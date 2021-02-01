@@ -12,10 +12,13 @@ public abstract class TurretTileModel extends AnimatedGeoModel<TurretTileEntity>
     public final String textureLocation;
     public final String animationLocation;
 
-    float pitch = 0;
-    float yaw = 0;
+    private float pitch = 0;
+    private float yaw = 0;
 
-    TurretTileModel(String modelLocation, String textureLocation, String animationLocation){
+    private float headRotationXPrev;
+    private float headRotationYPrev;
+
+    TurretTileModel(String modelLocation, String textureLocation, String animationLocation) {
 
         this.modelLocation = modelLocation;
         this.textureLocation = textureLocation;
@@ -25,17 +28,17 @@ public abstract class TurretTileModel extends AnimatedGeoModel<TurretTileEntity>
     @Override
     public void setLivingAnimations(TurretTileEntity entity, Integer uniqueID) {
 
-        pitch = entity.pitchToTarget;
-        yaw = entity.yawToTarget;
+        pitch = entity.getPitchToTarget();
+        yaw = entity.getYawToTarget();
         GeckoLibCache.getInstance().parser.setValue("head_rotation_y", yaw);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x", pitch);
-        GeckoLibCache.getInstance().parser.setValue("head_rotation_x_prev", entity.headRotationXPrev);
-        GeckoLibCache.getInstance().parser.setValue("head_rotation_y_prev", entity.headRotationYPrev);
-        GeckoLibCache.getInstance().parser.setValue("head_rotation_x_max", entity.headPitchMax);
-        
-        entity.headRotationXPrev = pitch;
-        entity.headRotationYPrev = yaw;
-        entity.lookingAtTarget = false;
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_x_prev", headRotationXPrev);
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_y_prev", headRotationYPrev);
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_x_max", entity.getHeadPitchMax());
+
+        headRotationXPrev = pitch;
+        headRotationYPrev = yaw;
+        entity.setLookingAtTarget(false);
 
         super.setLivingAnimations(entity, uniqueID);
     }

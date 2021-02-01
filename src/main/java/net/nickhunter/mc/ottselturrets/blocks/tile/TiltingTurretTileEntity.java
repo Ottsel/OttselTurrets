@@ -1,7 +1,7 @@
 package net.nickhunter.mc.ottselturrets.blocks.tile;
 
 import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.SoundEvent;
 import net.nickhunter.mc.ottselturrets.util.TiltDirection;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
@@ -9,18 +9,6 @@ import software.bernie.geckolib3.core.controller.AnimationController;
 
 @SuppressWarnings("rawtypes")
 public class TiltingTurretTileEntity extends TurretTileEntity {
-
-    public TiltingTurretTileEntity(TileEntityType<?> tileEntityType, String idleAnimation, String aimingAnimation,
-    String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax) {
-        super(tileEntityType, idleAnimation, aimingAnimation, firingAnimation, resetAnimation, range, damage, timeToCharge, timeToCoolDown, pitchMax, headPitchMax);
-    }
-
-    public float beamLength;
-
-    public TiltDirection localDirectionToTarget, tiltDirection;
-    public boolean tilt;
-
-    float tiltPitchAmount = 30;
 
     public static final String TILT_NORTH = "animation.turret_horizontal.tilt_north";
     public static final String TILTED_NORTH = "animation.turret_horizontal.tilted_north";
@@ -42,11 +30,29 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
 
     public static final String RESET_LEGS = "animation.turret_horizontal.reset_legs";
 
+    private final float tiltPitchAmount;
+
+    private float headPitchMax;
+
+    private TiltDirection localDirectionToTarget, tiltDirection;
+    private boolean tilt;
+
+    public TiltingTurretTileEntity(TileEntityType<?> tileEntityType, String idleAnimation, String aimingAnimation,
+            String firingAnimation, String resetAnimation, SoundEvent chargeSound, SoundEvent firingSound, int range,
+            int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax,
+            float tiltPitchAmount) {
+        super(tileEntityType, idleAnimation, aimingAnimation, firingAnimation, resetAnimation, chargeSound, firingSound,
+                range, damage, timeToCharge, timeToCoolDown, pitchMax, headPitchMax);
+        this.tiltPitchAmount = tiltPitchAmount;
+    }
+
     @Override
-    protected void clientTrackTarget(Vec3d target) {
-        super.clientTrackTarget(target);
-        
+    protected void clientTrackTarget() {
+        super.clientTrackTarget();
+
         localDirectionToTarget = getTargetLocalDirection();
+        float pitchToTarget = getPitchToTarget();
+        headPitchMax = getHeadPitchMax();
         tilt = false;
 
         // Target is above.
@@ -153,7 +159,7 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
     }
 
     @Override
-    protected void noTargets() {
+    protected void noTargetsOnClient() {
         tilt = false;
     }
 }

@@ -21,10 +21,10 @@ import software.bernie.geckolib3.model.AnimatedGeoModel;
 
 public class TurretBlock extends HorizontalBlock {
 
-    public final VoxelShape hitboxAABB;
-    public final String resourceName;
-    public final AnimatedGeoModel<TurretBlockItem> itemModel;
-    public final AnimatedGeoModel<TurretTileEntity> tileModel;
+    private final VoxelShape hitboxAABB;
+    private final String resourceName;
+    private final AnimatedGeoModel<TurretBlockItem> itemModel;
+    private final AnimatedGeoModel<TurretTileEntity> tileModel;
 
     public TurretBlock(Material material, String resourceName, AnimatedGeoModel<TurretBlockItem> itemModel,
             AnimatedGeoModel<TurretTileEntity> tileModel, VoxelShape hitboxAABB) {
@@ -33,6 +33,18 @@ public class TurretBlock extends HorizontalBlock {
         this.itemModel = itemModel;
         this.tileModel = tileModel;
         this.hitboxAABB = hitboxAABB;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public AnimatedGeoModel<TurretBlockItem> getItemModel() {
+        return itemModel;
+    }
+
+    public AnimatedGeoModel<TurretTileEntity> getTileModel() {
+        return tileModel;
     }
 
     @Override

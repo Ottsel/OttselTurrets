@@ -17,7 +17,7 @@ public class TurretBlockItem extends BlockItem implements IAnimatable {
 
     public TurretBlockItem(TurretBlock blockTurret) {
         super(blockTurret, new Item.Properties().group(ItemGroupRegistry.MAIN)
-                .setISTER(() -> () -> new TurretItemRenderer(blockTurret.itemModel)));
+                .setISTER(() -> () -> new TurretItemRenderer(blockTurret.getItemModel())));
     }
 
     private <P extends Item & IAnimatable> PlayState predicate(AnimationEvent<P> event) {

@@ -23,7 +23,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.network.packets.PacketTurretUpdate;
-import net.nickhunter.mc.ottselturrets.registry.SoundRegistry;
 import net.nickhunter.mc.ottselturrets.util.TiltDirection;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -36,37 +35,41 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 @SuppressWarnings("rawtypes")
-public class TurretTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable {
+public abstract class TurretTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable {
 
-    protected static final Vec3d targetOffset = new Vec3d(0, 1f, 0);
+    protected static final Vec3d targetOffset = new Vec3d(0, .75f, 0);
 
-    public final String idleAnimation;
-    public final String aimingAnimation;
-    public final String firingAnimation;
-    public final String resetAnimation;
+    private final String idleAnimation;
+    private final String aimingAnimation;
+    private final String firingAnimation;
+    private final String resetAnimation;
 
-    public final int range;
-    public final int damage;
-    public final double timeToCharge;
-    public final double timeToCoolDown;
-    public final float pitchMax;
-    public final float headPitchMax;
+    private final SoundEvent chargeSound;
+    private final SoundEvent firingSound;
 
-    public float yawToTarget;
-    public float pitchToTarget;
+    private final int range;
+    private final int damage;
+    private final double timeToCharge;
+    private final double timeToCoolDown;
+    private final float pitchMax;
+    private final float headPitchMax;
 
-    public TurretState turretState = TurretState.SCANNING;
-    public TurretState lastTurretState = TurretState.SCANNING;
+    private Vec3d posOffset = new Vec3d(.5f, .75f, .5f);
+
+    private LivingEntity target;
+
+    private float yawToTarget;
+    private float pitchToTarget;
+
+    private TurretState turretState = TurretState.SCANNING;
+    private TurretState lastTurretState = TurretState.SCANNING;
 
     private boolean chargeSoundHasPlayed;
-    public boolean lookingAtTarget;
+    private boolean lookingAtTarget;
 
-    public int chargeTimer = -1;
-    public int chargeResetTimer = OttselTurrets.TICKS_PER_SECOND * 2;
-    public int coolDownTimer = -1;
-
-    public float headRotationYPrev;
-    public float headRotationXPrev;
+    private int chargeCounter = -1;
+    private int chargeResetCounter = OttselTurrets.TICKS_PER_SECOND * 2;
+    private int coolDownTimer = -1;
 
     private final AnimationFactory factory = new AnimationFactory(this);
 
@@ -75,13 +78,16 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
     }
 
     public TurretTileEntity(TileEntityType<?> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
-            String firingAnimation, String resetAnimation, int range, int damage, double timeToCharge,
-            double timeToCoolDown, float pitchMax, float headPitchMax) {
+            String firingAnimation, String resetAnimation, SoundEvent chargingSound, SoundEvent firingSound, int range,
+            int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax) {
         super(tileEntityTypeIn);
         this.idleAnimation = idleAnimation;
         this.aimingAnimation = aimingAnimation;
         this.firingAnimation = firingAnimation;
         this.resetAnimation = resetAnimation;
+
+        this.chargeSound = chargingSound;
+        this.firingSound = firingSound;
 
         this.range = range;
         this.damage = damage;
@@ -89,140 +95,147 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         this.timeToCoolDown = timeToCoolDown;
         this.pitchMax = pitchMax;
         this.headPitchMax = headPitchMax;
+    }
 
-        this.markDirty();
+    public float getHeadPitchMax() {
+        return headPitchMax;
+    }
+
+    public float getPitchToTarget() {
+        return pitchToTarget;
+    }
+
+    public float getYawToTarget() {
+        return yawToTarget;
+    }
+    public boolean getLookingAtTarget(){
+        return lookingAtTarget;
+    }
+
+    public LivingEntity getTarget() {
+        return target;
+    }
+
+    public Vec3d getPosOffset() {
+        return posOffset;
+    }
+
+    public TurretState getTurretState() {
+        return turretState;
+    }
+
+    public void setLookingAtTarget(boolean lookingAtTarget) {
+        this.lookingAtTarget = lookingAtTarget;
+    }
+
+    public void setTurretState(TurretState turretState) {
+        this.turretState = turretState;
     }
 
     @Override
     public void tick() {
-        if (world == null)
-            return;
-        // Get a list of nearby potential targets.
+        commonTick();
+        if (world.isRemote) {
+            clientTick();
+        } else {
+            serverTick();
+        }
+    }
+
+    protected void commonTick() {
+
         List<LivingEntity> targets = getTargets();
-        if (!targets.isEmpty()) { // If there are potential targets...
-            LivingEntity target = getClosestTarget(targets);
-            if (world.isRemote) { // On client...
-                // Call clientTick.
-                clientTrackTarget(target.getPositionVec());
-            } else { // On server...
-                // Return if still cooling down.
-                if (coolDownTimer != -1) {
-                    coolDown();
 
-                    // Reset the turret's rotation.
-                    updateClient(TurretState.AIMING);
-                    return;
-                }
-                // Tell the client to aim at the target, then charge up the turret.
-                updateClient(TurretState.AIMING);
-                chargeUp(target);
-            }
-        } else { // If there are no potential targets...
-            if (!world.isRemote) { // On server...
-                // Cool down if applicable.
-                if (coolDownTimer != -1) {
-                    coolDown();
-                }
-                // Count down the charge reset timer if the turret has started to charge up...
-                if (chargeTimer != -1) {
-                    resetTimer();
-                } else { // If the charge expires...
-                    // Reset the turret's rotation.
-                    yawToTarget = 0;
-                    pitchToTarget = 0;
-                    updateClient(TurretState.SCANNING);
-                }
-            } else {
-                noTargets();
-            }
+        if (!targets.isEmpty()) {
+            target = getClosestTarget(targets);
+        } else {
+            target = null;
         }
     }
 
-    protected void noTargets() {
+    protected void serverTick() {
+        if (target != null) {
+            targetsOnServer();
+        } else {
+            noTargetsOnServer();
+        }
+    }
+
+    protected void clientTick() {
+        if (target != null) {
+            targetsOnClient();
+        } else {
+            noTargetsOnClient();
+        }
+    }
+
+    protected void targetsOnServer() {
+        updateClient(TurretState.AIMING);
+        if (coolDownTimer != -1) {
+            coolDownTimer();
+            return;
+        }
+        chargeTimer(target);
+    }
+
+    protected void noTargetsOnServer() {
+        if (coolDownTimer != -1) {
+            coolDownTimer();
+        }
+        if (chargeCounter != -1) {
+            resetTimer();
+        }
+    }
+
+    protected void targetsOnClient() {
+        clientTrackTarget();
+    }
+
+    protected void noTargetsOnClient() {
 
     }
 
-    /*
-     * Acts as a timer to determine if the turret is charged up and can fire.
-     */
-    private void chargeUp(LivingEntity target) {
-        if (chargeTimer < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) { // If the turret is still charging up...
-            chargeTimer++;
-
-            // Return if the charge sound has already been played. TODO Sound event
-            if (chargeSoundHasPlayed)
-                return;
-
-            // Play the charge sound
-            playSoundEffect(SoundRegistry.LASER_CHARGE.getSound());
+    protected void chargingActions() {
+        if (!chargeSoundHasPlayed) {
+            playSoundEffect(chargeSound);
             chargeSoundHasPlayed = true;
-        } else { // If the turret is done charging up...
-
-            // Fire the turret and start the cooldown.
-            fireTurret(target);
-            coolDown();
-
-            // Reset the charge time and charge sound flag.
-            chargeTimer = -1;
-            chargeSoundHasPlayed = false;
-
         }
+    }
+
+    protected void chargeComplete() {
+        // Fire the turret and start the cooldown.
+        fireTurret(target);
+        chargeSoundHasPlayed = false;
+        coolDownTimer();
     }
 
     // Facilitates firing the turret.
-    private void fireTurret(LivingEntity target) {
+    protected void fireTurret(LivingEntity target) {
 
-        // TODO Abstract this.
-
-        // Tell the client to play the shooting animation.
         updateClient(TurretState.FIRING);
+        playSoundEffect(firingSound);
 
-        // Play shooting sound. TODO Sound event
-        playSoundEffect(SoundRegistry.LASER_BOLT.getSound());
-
-        // Damage the target. TODO customize this
+        // Damage the target.
         target.attackEntityFrom(new DamageSource(DamageSource.MAGIC.damageType), damage);
     }
 
-    /*
-     * Acts as a cool down timer for the turret
-     */
-    private void coolDown() {
-        if (coolDownTimer < timeToCoolDown * OttselTurrets.TICKS_PER_SECOND - 1) { // If the turret is cooling down...
-            coolDownTimer++;
-        } else { // If the turret is done cooling down...
-            coolDownTimer = -1;
-        }
+    protected void coolDownComplete() {
+        chargeSoundHasPlayed = false;
+        updateClient(TurretState.SCANNING);
     }
 
-    /*
-     * Acts as a timer for expiring the turret's charge.
-     */
-    private void resetTimer() {
-        if (chargeResetTimer == 0) { // If the turret's reset timer is done...
-
-            // Reset the charge.
-            chargeTimer = -1;
-            chargeSoundHasPlayed = false;
-            chargeResetTimer = OttselTurrets.TICKS_PER_SECOND * 2;
-        } else { // If the turret's reset timer is not done...
-            chargeResetTimer--;
-        }
+    protected void resetComplete() {
+        chargeSoundHasPlayed = false;
+        updateClient(TurretState.SCANNING);
     }
 
-    public void playSoundEffect(SoundEvent soundEvent) {
-        if (world == null)
-            return;
-        PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ());
-        if (player == null)
-            return;
-        Vec3i playerPos = new Vec3i(player.getPosition().getX(), player.getPosition().getY(),
-                player.getPosition().getZ());
-        world.playSound(player, this.pos, soundEvent, SoundCategory.BLOCKS,
-                (float) (1 / Math.sqrt((this.pos.distanceSq(playerPos)))), 1);
+    protected void clientTrackTarget() {
+        Vec3d targetPos = target.getPositionVec();
+        yawToTarget = calculateYaw(targetPos);
+        pitchToTarget = calculatePitch(targetPos);
     }
 
-    private List<LivingEntity> getTargets() {
+    protected final List<LivingEntity> getTargets() {
 
         double x1 = this.pos.getX() - range;
         double y1 = this.pos.getY() - range;
@@ -237,7 +250,7 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         entities.forEach((entity) -> {
 
             RayTraceResult result = rayTraceToTarget(entity.getPositionVec());
-            float pitch = getPitch(entity.getPositionVec());
+            float pitch = calculatePitch(entity.getPositionVec());
 
             if (result.getType() == RayTraceResult.Type.BLOCK) {
                 validTargets.remove(entity);
@@ -250,15 +263,16 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         return validTargets;
     }
 
-    protected RayTraceResult rayTraceToTarget(Vec3d target) {
-        Vec3d posVec = new Vec3d(this.pos.getX() + .5f, this.pos.getY() + 1f, this.pos.getZ() + .5f);
+    protected final RayTraceResult rayTraceToTarget(Vec3d target) {
+        Vec3d posVec = new Vec3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.y,
+                this.pos.getZ() + posOffset.z);
         return world.rayTraceBlocks(new RayTraceContext(posVec, target.add(targetOffset),
                 RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
     }
 
-    private LivingEntity getClosestTarget(List<LivingEntity> targets) {
+    protected final LivingEntity getClosestTarget(List<LivingEntity> targets) {
 
-        LivingEntity target = targets.get(0);
+        LivingEntity closestTarget = targets.get(0);
         double shortestDist = range;
 
         for (LivingEntity entity : targets) {
@@ -266,48 +280,14 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
             double dist = entityPos.distanceTo(new Vec3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()));
             if (dist < shortestDist) {
                 shortestDist = dist;
-                target = entity;
+                closestTarget = entity;
             }
         }
-        return target;
-    }
-
-    private void updateClient(TurretState turretState) {
-        if (this.turretState == turretState)
-            return;
-        this.turretState = turretState;
-        if (world != null)
-            OttselTurrets.getNetworkChannel().sendToTrackingChunk(new PacketTurretUpdate(turretState, pos),
-                    world.getChunkAt(pos));
-    }
-
-    /*
-     * Client
-     */
-
-    // Tracks the target position every tick.
-    protected void clientTrackTarget(Vec3d target) {
-        yawToTarget = getYaw(target);
-        pitchToTarget = getPitch(target);
-    }
-
-    private float getYaw(Vec3d target) {
-        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
-        return (float) MathHelper.wrapDegrees(
-                MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
-    }
-
-    private float getPitch(Vec3d target) {
-        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
-        double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
-        float pitch = (float) MathHelper
-                .wrapDegrees((MathHelper.atan2(-horizComponent, diffPos.y) * (double) (180F / (float) Math.PI) + 90));
-        return pitch;
+        return closestTarget;
     }
 
     // Returns the rough cardinal direction of the target (RELATIVE TO THE TURRET).
-    // Might add intercardinal directions later.
-    TiltDirection getTargetLocalDirection() {
+    protected final TiltDirection getTargetLocalDirection() {
         // North "Quadrant"
         if (yawToTarget >= -30 && yawToTarget < 30) {
             return TiltDirection.NORTH;
@@ -342,7 +322,75 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         }
     }
 
-    public int getYawOffset() {
+    private float calculateYaw(Vec3d target) {
+        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
+        return (float) MathHelper.wrapDegrees(
+                MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
+    }
+
+    private float calculatePitch(Vec3d target) {
+        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
+        double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
+        float pitch = (float) MathHelper
+                .wrapDegrees((MathHelper.atan2(-horizComponent, diffPos.y) * (double) (180F / (float) Math.PI) + 90));
+        return pitch;
+    }
+
+    // Acts as a timer to determine if the turret is charged up and can fire.
+    private void chargeTimer(LivingEntity target) {
+        if (chargeCounter < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) {
+            chargingActions();
+            chargeCounter++;
+        } else {
+            chargeComplete();
+            chargeCounter = -1;
+
+        }
+    }
+
+    // Acts as a cool down timer for the turret
+    private void coolDownTimer() {
+        if (coolDownTimer < timeToCoolDown * OttselTurrets.TICKS_PER_SECOND - 1) { // If the turret is cooling down...
+            coolDownTimer++;
+        } else { // If the turret is done cooling down...
+            coolDownComplete();
+            coolDownTimer = -1;
+        }
+    }
+
+    // Acts as a timer for expiring the turret's charge.
+    private void resetTimer() {
+        if (chargeResetCounter == 0) {
+            resetComplete();
+            chargeCounter = -1;
+            chargeResetCounter = OttselTurrets.TICKS_PER_SECOND * 2;
+        } else {
+            chargeResetCounter--;
+        }
+    }
+
+    private void playSoundEffect(SoundEvent soundEvent) {
+        if (world == null)
+            return;
+        PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ());
+        if (player == null)
+            return;
+        Vec3i playerPos = new Vec3i(player.getPosition().getX(), player.getPosition().getY(),
+                player.getPosition().getZ());
+        world.playSound(player, this.pos, soundEvent, SoundCategory.BLOCKS,
+                (float) (1 / Math.sqrt((this.pos.distanceSq(playerPos)))), 1);
+    }
+
+    private void updateClient(TurretState turretState) {
+        if (this.turretState == turretState)
+            return;
+        this.turretState = turretState;
+        if (world != null)
+            OttselTurrets.getNetworkChannel().sendToTrackingChunk(new PacketTurretUpdate(turretState, pos),
+                    world.getChunkAt(pos));
+    }
+
+    private int getYawOffset() {
         switch (this.getBlockState().get(HORIZONTAL_FACING)) {
             case NORTH:
             default:
@@ -374,66 +422,45 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
 
     }
 
-    protected void animateHead(AnimationController controller) {
+    private void animateHead(AnimationController controller) {
         AnimationBuilder animationBuilder = new AnimationBuilder();
         switch (turretState) {
             case SCANNING:
                 switch (lastTurretState) {
                     case SCANNING:
-                        animationBuilder.addAnimation(resetAnimation, false);
-                        animationBuilder.addAnimation(idleAnimation, true);
-                        lastTurretState = TurretState.SCANNING;
+                        scanningFromScanning(controller, animationBuilder);
                         break;
                     case AIMING:
-                        animationBuilder.addAnimation(idleAnimation, true);
-                        lastTurretState = TurretState.SCANNING;
+                        scanningFromAiming(controller, animationBuilder);
                         break;
                     case FIRING:
-                        if (controller.getAnimationState().equals(AnimationState.Stopped)) {
-                            animationBuilder.addAnimation(resetAnimation, false);
-                            animationBuilder.addAnimation(idleAnimation, true);
-                            lastTurretState = TurretState.SCANNING;
-                        } else {
-                            animationBuilder.addAnimation(firingAnimation, false);
-                            lastTurretState = TurretState.FIRING;
-                        }
+                        scanningFromFiring(controller, animationBuilder);
                         break;
                 }
                 break;
             case AIMING:
                 switch (lastTurretState) {
                     case SCANNING:
-                        animationBuilder.addAnimation(aimingAnimation, true);
-                        lastTurretState = TurretState.AIMING;
+                        aimingFromScanning(controller, animationBuilder);
                         break;
                     case AIMING:
-                        animationBuilder.addAnimation(aimingAnimation, true);
-                        lastTurretState = TurretState.AIMING;
+                        aimingFromAiming(controller, animationBuilder);
                         break;
                     case FIRING:
-                        if (controller.getAnimationState().equals(AnimationState.Stopped)) {
-                            animationBuilder.addAnimation(aimingAnimation, true);
-                            lastTurretState = TurretState.AIMING;
-                        } else {
-                            animationBuilder.addAnimation(firingAnimation, false);
-                            lastTurretState = TurretState.FIRING;
-                        }
+                        aimingFromFiring(controller, animationBuilder);
                         break;
                 }
                 break;
             case FIRING:
                 switch (lastTurretState) {
                     case SCANNING:
-                        OttselTurrets.LOGGER.error("Something is horribly wrong: Went from scanning to shooting.");
-                        lastTurretState = TurretState.SCANNING;
+                        firingFromScanning(controller, animationBuilder);
                         break;
                     case AIMING:
-                        animationBuilder.addAnimation(firingAnimation, false);
-                        lastTurretState = TurretState.FIRING;
+                        firingFromAiming(controller, animationBuilder);
                         break;
                     case FIRING:
-                        animationBuilder.addAnimation(firingAnimation, false);
-                        lastTurretState = TurretState.FIRING;
+                        firingFromFiring(controller, animationBuilder);
                         break;
                 }
                 break;
@@ -441,19 +468,86 @@ public class TurretTileEntity extends TileEntity implements ITickableTileEntity,
         controller.setAnimation(animationBuilder);
     }
 
-    private <ENTITY extends IAnimatable> void instructionListener(CustomInstructionKeyframeEvent<ENTITY> event) {
+    protected void scanningFromScanning(AnimationController controller, AnimationBuilder animationBuilder) {
+        animationBuilder.addAnimation(resetAnimation, false);
+        animationBuilder.addAnimation(idleAnimation, true);
+        lastTurretState = TurretState.SCANNING;
+    }
+
+    protected void scanningFromAiming(AnimationController controller, AnimationBuilder animationBuilder) {
+        animationBuilder.addAnimation(idleAnimation, true);
+        lastTurretState = TurretState.SCANNING;
+    }
+
+    protected void scanningFromFiring(AnimationController controller, AnimationBuilder animationBuilder) {
+        if (controller.getAnimationState().equals(AnimationState.Stopped)) {
+            animationBuilder.addAnimation(resetAnimation, false);
+            animationBuilder.addAnimation(idleAnimation, true);
+            lastTurretState = TurretState.SCANNING;
+        } else {
+            animationBuilder.addAnimation(firingAnimation, false);
+            lastTurretState = TurretState.FIRING;
+        }
+    }
+
+    protected void aimingFromScanning(AnimationController controller, AnimationBuilder animationBuilder) {
+        animationBuilder.addAnimation(aimingAnimation, true);
+        playSoundEffect(chargeSound);
+        lastTurretState = TurretState.AIMING;
+    }
+
+    protected void aimingFromAiming(AnimationController controller, AnimationBuilder animationBuilder) {
+        animationBuilder.addAnimation(aimingAnimation, true);
+        lastTurretState = TurretState.AIMING;
+    }
+
+    protected void aimingFromFiring(AnimationController controller, AnimationBuilder animationBuilder) {
+        if (controller.getAnimationState().equals(AnimationState.Stopped)) {
+            animationBuilder.addAnimation(aimingAnimation, true);
+            lastTurretState = TurretState.AIMING;
+        } else {
+            animationBuilder.addAnimation(firingAnimation, false);
+            lastTurretState = TurretState.FIRING;
+        }
+    }
+
+    protected void firingFromScanning(AnimationController controller, AnimationBuilder animationBuilder) {
+        OttselTurrets.LOGGER.error("Something is horribly wrong: Went from scanning to shooting.");
+        lastTurretState = TurretState.SCANNING;
+    }
+
+    protected void firingFromAiming(AnimationController controller, AnimationBuilder animationBuilder) {
+        animationBuilder.addAnimation(firingAnimation, false);
+        playSoundEffect(firingSound);
+        lastTurretState = TurretState.FIRING;
+    }
+
+    protected void firingFromFiring(AnimationController controller, AnimationBuilder animationBuilder) {
+        animationBuilder.addAnimation(firingAnimation, false);
+        lastTurretState = TurretState.FIRING;
+    }
+
+    protected <ENTITY extends IAnimatable> void instructionListener(CustomInstructionKeyframeEvent<ENTITY> event) {
         for (String instruction : event.instructions) {
             if (instruction.equals("looking_at_target")) {
-                OttselTurrets.LOGGER.debug("looking_at_target");
-                lookingAtTarget = true;
+                OttselTurrets.LOGGER.debug("looking_at_target instruction");
+                lookingAtTarget();
             }
             if (instruction.equals("reset_rotation")) {
-                OttselTurrets.LOGGER.debug("reset_rotation");
-                pitchToTarget = 0;
-                yawToTarget = 0;
-                lookingAtTarget = true;
+                OttselTurrets.LOGGER.debug("reset_rotation instruction");
+                resetRotation();
             }
         }
+    }
+
+    protected void lookingAtTarget() {
+        lookingAtTarget = true;
+    }
+
+    protected void resetRotation() {
+        pitchToTarget = 0;
+        yawToTarget = 0;
+        lookingAtTarget = true;
     }
 
     @Override

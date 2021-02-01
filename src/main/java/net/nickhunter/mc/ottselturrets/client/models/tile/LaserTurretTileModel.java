@@ -16,7 +16,7 @@ public class LaserTurretTileModel extends TurretTileModel {
 
     @Override
     public void setLivingAnimations(TurretTileEntity entity, Integer uniqueID) {
-        GeckoLibCache.getInstance().parser.setValue("beam_length", ((LaserTurretTileEntity) entity).beamLength);
+        GeckoLibCache.getInstance().parser.setValue("beam_length", ((LaserTurretTileEntity) entity).getBeamLength());
         super.setLivingAnimations(entity, uniqueID);
     }
 }

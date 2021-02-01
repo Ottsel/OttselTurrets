@@ -1,8 +1,10 @@
 package net.nickhunter.mc.ottselturrets.blocks.tile;
 
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.nickhunter.mc.ottselturrets.registry.SoundRegistry;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
 
 public class LaserTurretTileEntity extends TiltingTurretTileEntity {
@@ -12,28 +14,43 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
     public static final String FIRING_ANIMATION = "animation.turret_horizontal.fire_beam";
     public static final String RESET_ANIMATION = "animation.turret_horizontal.reset_rotation";
 
+    public static final SoundEvent CHARGE_SOUND = SoundRegistry.LASER_CHARGE.getSound();
+    public static final SoundEvent FIRING_SOUND = SoundRegistry.LASER_BOLT.getSound();
+
     public static final int RANGE = 10;
     public static final int DAMAGE = 20;
-    public static final double CHARGE_TIME = 1.5;
+    public static final double CHARGE_TIME = 1.7;
     public static final double COOLDOWN_TIME = 2;
     public static final float PITCH_MAX = 45;
     public static final float HEAD_PITCH_MAX = 15;
 
+    public static final float TILT_PITCH_AMOUNT = 20;
+
+    private float beamLength;
+
     public LaserTurretTileEntity() {
         super(TileRegistry.LASER_TURRET.get(), IDLE_ANIMATION, AIMING_ANIMATION, FIRING_ANIMATION, RESET_ANIMATION,
-                RANGE, DAMAGE, CHARGE_TIME, COOLDOWN_TIME, PITCH_MAX, HEAD_PITCH_MAX);
+                CHARGE_SOUND, FIRING_SOUND, RANGE, DAMAGE, CHARGE_TIME, COOLDOWN_TIME, PITCH_MAX, HEAD_PITCH_MAX,
+                TILT_PITCH_AMOUNT);
+    }
+
+    public float getBeamLength() {
+        return beamLength;
     }
 
     @Override
-    protected void clientTrackTarget(Vec3d target) {
-        setBeamLength(target);
-        super.clientTrackTarget(target);
+    protected void clientTrackTarget() {
+        calculateBeamLength(getTarget().getPositionVec());
+        super.clientTrackTarget();
     }
 
-    private void setBeamLength(Vec3d targetPos) {
+    private void calculateBeamLength(Vec3d targetPos) {
         if (world == null)
             return;
-        Vec3d posVec = new Vec3d(this.pos.getX()+.5f, this.pos.getY()+1f, this.pos.getZ()+.5f);
+
+        Vec3d posOffset = getPosOffset();
+        Vec3d posVec = new Vec3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.x,
+                this.pos.getZ() + posOffset.z);
         Vec3d posDiff = targetPos.add(targetOffset).subtract(posVec);
         RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec, posDiff.scale(256),
                 RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
