@@ -19,8 +19,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3i;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.network.packets.PacketTurretUpdate;
 import net.nickhunter.mc.ottselturrets.util.TiltDirection;
@@ -37,7 +37,7 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 @SuppressWarnings("rawtypes")
 public abstract class TurretTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable {
 
-    protected static final Vec3d targetOffset = new Vec3d(0, .75f, 0);
+    protected static final Vector3d targetOffset = new Vector3d(0, .75f, 0);
 
     private final String idleAnimation;
     private final String aimingAnimation;
@@ -55,11 +55,11 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     private final double timeToCoolDown;
     private final float pitchMax;
     private final float headPitchMax;
-    
+
     private float headRotationXPrev;
     private float headRotationYPrev;
 
-    private Vec3d posOffset = new Vec3d(.5f, .75f, .5f);
+    private Vector3d posOffset = new Vector3d(.5f, .75f, .5f);
 
     private LivingEntity target;
 
@@ -120,6 +120,7 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     public float getHeadRotationXPrev() {
         return headRotationXPrev;
     }
+
     public float getHeadRotationYPrev() {
         return headRotationYPrev;
     }
@@ -132,7 +133,7 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
         return target;
     }
 
-    public Vec3d getPosOffset() {
+    public Vector3d getPosOffset() {
         return posOffset;
     }
 
@@ -159,9 +160,11 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     public void setYawToTarget(float yawToTarget) {
         this.yawToTarget = yawToTarget;
     }
+
     public void setHeadRotationXPrev(float headRotationXPrev) {
         this.headRotationXPrev = headRotationXPrev;
     }
+
     public void setHeadRotationYPrev(float headRotationYPrev) {
         this.headRotationYPrev = headRotationYPrev;
     }
@@ -264,7 +267,7 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     }
 
     protected void clientTrackTarget() {
-        Vec3d targetPos = target.getPositionVec();
+        Vector3d targetPos = target.getPositionVec();
         yawToTarget = calculateYaw(targetPos);
         pitchToTarget = calculatePitch(targetPos);
     }
@@ -297,8 +300,8 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
         return validTargets;
     }
 
-    protected final RayTraceResult rayTraceToTarget(Vec3d target) {
-        Vec3d posVec = new Vec3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.y,
+    protected final RayTraceResult rayTraceToTarget(Vector3d target) {
+        Vector3d posVec = new Vector3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.y,
                 this.pos.getZ() + posOffset.z);
         return world.rayTraceBlocks(new RayTraceContext(posVec, target.add(targetOffset),
                 RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
@@ -310,8 +313,8 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
         double shortestDist = range;
 
         for (LivingEntity entity : targets) {
-            Vec3d entityPos = entity.getPositionVec();
-            double dist = entityPos.distanceTo(new Vec3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()));
+            Vector3d entityPos = entity.getPositionVec();
+            double dist = entityPos.distanceTo(new Vector3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()));
             if (dist < shortestDist) {
                 shortestDist = dist;
                 closestTarget = entity;
@@ -356,14 +359,14 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
         }
     }
 
-    private float calculateYaw(Vec3d target) {
-        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
+    private float calculateYaw(Vector3d target) {
+        Vector3d diffPos = new Vector3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
         return (float) MathHelper.wrapDegrees(
                 MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
     }
 
-    private float calculatePitch(Vec3d target) {
-        Vec3d diffPos = new Vec3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
+    private float calculatePitch(Vector3d target) {
+        Vector3d diffPos = new Vector3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
         double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
         float pitch = (float) MathHelper
                 .wrapDegrees((MathHelper.atan2(-horizComponent, diffPos.y) * (double) (180F / (float) Math.PI) + 90));
@@ -406,10 +409,10 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     private void playSoundEffect(SoundEvent soundEvent) {
         if (world == null)
             return;
-        PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ());
+        PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 64, true);
         if (player == null)
             return;
-        Vec3i playerPos = new Vec3i(player.getPosition().getX(), player.getPosition().getY(),
+        Vector3i playerPos = new Vector3i(player.getPosition().getX(), player.getPosition().getY(),
                 player.getPosition().getZ());
         world.playSound(player, this.pos, soundEvent, SoundCategory.BLOCKS,
                 (float) (1 / Math.sqrt((this.pos.distanceSq(playerPos)))), 1);

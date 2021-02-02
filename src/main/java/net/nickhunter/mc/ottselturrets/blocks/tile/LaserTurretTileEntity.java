@@ -4,7 +4,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import net.nickhunter.mc.ottselturrets.registry.SoundRegistry;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
 import net.nickhunter.mc.ottselturrets.util.TurretDamageSource;
@@ -48,14 +48,14 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
         super.clientTrackTarget();
     }
 
-    private void calculateBeamLength(Vec3d targetPos) {
+    private void calculateBeamLength(Vector3d targetPos) {
         if (world == null)
             return;
 
-        Vec3d posOffset = getPosOffset();
-        Vec3d posVec = new Vec3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.x,
+        Vector3d posOffset = getPosOffset();
+        Vector3d posVec = new Vector3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.x,
                 this.pos.getZ() + posOffset.z);
-        Vec3d posDiff = targetPos.add(targetOffset).subtract(posVec);
+        Vector3d posDiff = targetPos.add(targetOffset).subtract(posVec);
         RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec, posDiff.scale(256),
                 RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
         if (result.getType() == RayTraceResult.Type.MISS) {
