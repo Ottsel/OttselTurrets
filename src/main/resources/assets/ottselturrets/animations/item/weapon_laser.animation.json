@@ -1,0 +1,78 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.weapon_laser.fire": {
+			"animation_length": 0.6,
+			"bones": {
+				"slide": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.16": {
+							"vector": [0, 0, 6.5],
+							"easing": "easeInElastic"
+						},
+						"0.4": {
+							"vector": [0, 0, 6.5],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						},
+						"0.56": {
+							"vector": [0, 0, 0],
+							"easing": "easeInElastic",
+							"easingArgs": [1]
+						}
+					}
+				},
+				"beam": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.12": {
+							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"easing": "easeInExpo"
+						},
+						"0.4": {
+							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"easing": "linear"
+						},
+						"0.56": {
+							"vector": [0, 0, "-((beam_length-.5)*16)"],
+							"easing": "easeInExpo"
+						},
+						"0.6": {
+							"vector": [0, 0, 0],
+							"easing": "step",
+							"easingArgs": [2]
+						}
+					},
+					"scale": {
+						"0.0": {
+							"vector": [1, 1, 1]
+						},
+						"0.12": {
+							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"easing": "easeInExpo"
+						},
+						"0.4": {
+							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"easing": "linear"
+						},
+						"0.56": {
+							"vector": [1, 1, 0],
+							"easing": "easeInExpo"
+						},
+						"0.6": {
+							"vector": [0, 0, 0],
+							"easing": "step",
+							"easingArgs": [2]
+						}
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}
