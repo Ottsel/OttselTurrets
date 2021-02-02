@@ -270,17 +270,17 @@
 							"vector": [0, 0, 0]
 						},
 						"0.44": {
-							"vector": [-135, 0, 0],
+							"vector": [-315, 0, 0],
 							"easing": "easeInElastic",
 							"easingArgs": [1.5]
 						},
 						"1.6": {
-							"vector": [-135, 0, 0],
+							"vector": [-315, 0, 0],
 							"easing": "easeInElastic",
 							"easingArgs": [1.5]
 						},
 						"2.48": {
-							"vector": [180, 0, 0],
+							"vector": [0, 0, 0],
 							"easing": "easeInElastic",
 							"easingArgs": [1]
 						}
@@ -327,12 +327,12 @@
 							"vector": [0, 0, 0]
 						},
 						"0.44": {
-							"vector": [0, 0, -3.5],
+							"vector": [0, 0, -3.775],
 							"easing": "easeInElastic",
 							"easingArgs": [1.5]
 						},
 						"1.6": {
-							"vector": [0, 0, -3.5],
+							"vector": [0, 0, -3.775],
 							"easing": "easeInElastic",
 							"easingArgs": [1.5]
 						},
@@ -346,12 +346,12 @@
 							"vector": [1, 1, 1]
 						},
 						"0.44": {
-							"vector": [1, 1, 7.3],
+							"vector": [1, 1, 7.2],
 							"easing": "easeInElastic",
 							"easingArgs": [1.5]
 						},
 						"1.6": {
-							"vector": [1, 1, 7.3],
+							"vector": [1, 1, 7.2],
 							"easing": "easeInElastic",
 							"easingArgs": [1.5]
 						},
@@ -643,6 +643,25 @@
 							"easingArgs": [3]
 						}
 					}
+				},
+				"spool": {
+					"scale": {
+						"0.16": {
+							"vector": [1, 1, 1]
+						},
+						"0.44": {
+							"vector": [1, 0.75, 0.75],
+							"easing": "easeInElastic",
+							"easingArgs": [1.5]
+						},
+						"1.6": {
+							"vector": [1, 0.75, 0.75]
+						},
+						"2.48": {
+							"vector": [1, 1, 1],
+							"easing": "easeInElastic"
+						}
+					}
 				}
 			}
 		},
@@ -703,23 +722,7 @@
 			}
 		},
 		"animation.ballista_turret.reset_rotation": {
-			"animation_length": 0.52,
-			"bones": {
-				"head": {
-					"rotation": {
-						"0.0": {
-							"vector": ["head_rotation_x", "head_rotation_y ", 0]
-						},
-						"0.52": {
-							"vector": [0, 0, 0],
-							"easing": "easeInOutSine"
-						}
-					}
-				}
-			},
-			"timeline": {
-				"0.48": ["reset_rotation"]
-			}
+			"animation_length": 0.52
 		}
 	},
 	"geckolib_format_version": 2

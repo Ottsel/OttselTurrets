@@ -279,7 +279,7 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
         // Find entities around this tile entity.
         List<LivingEntity> entities = Collections.emptyList();
 
-        entities = world.getEntitiesWithinAABB(PlayerEntity.class, area);
+        entities = world.getEntitiesWithinAABB(MobEntity.class, area);
         List<LivingEntity> validTargets = new ArrayList<LivingEntity>(entities);
         entities.forEach((entity) -> {
 
