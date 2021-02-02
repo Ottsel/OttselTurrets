@@ -1,6 +1,7 @@
 package net.nickhunter.mc.ottselturrets.blocks.tile;
 
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.nickhunter.mc.ottselturrets.util.TiltDirection;
 import software.bernie.geckolib3.core.AnimationState;
@@ -38,11 +39,11 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
     private boolean tilt;
 
     public TiltingTurretTileEntity(TileEntityType<?> tileEntityType, String idleAnimation, String aimingAnimation,
-            String firingAnimation, String resetAnimation, SoundEvent chargeSound, SoundEvent firingSound, int range,
-            int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax,
-            float tiltPitchAmount) {
+            String firingAnimation, String resetAnimation, SoundEvent chargeSound, SoundEvent firingSound,
+            DamageSource damageSource, int range, int damage, double timeToCharge, double timeToCoolDown,
+            float pitchMax, float headPitchMax, float tiltPitchAmount) {
         super(tileEntityType, idleAnimation, aimingAnimation, firingAnimation, resetAnimation, chargeSound, firingSound,
-                range, damage, timeToCharge, timeToCoolDown, pitchMax, headPitchMax);
+                damageSource, range, damage, timeToCharge, timeToCoolDown, pitchMax, headPitchMax);
         this.tiltPitchAmount = tiltPitchAmount;
     }
 
@@ -64,13 +65,13 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
                 case EAST:
                 case SOUTH:
                 case WEST:
-                    pitchToTarget += tiltPitchAmount;
+                    setPitchToTarget(pitchToTarget += tiltPitchAmount);
                     break;
                 case NORTHEAST:
                 case SOUTHEAST:
                 case SOUTHWEST:
                 case NORTHWEST:
-                    pitchToTarget += (tiltPitchAmount + 15);
+                    setPitchToTarget(pitchToTarget += (tiltPitchAmount + 15));
                     break;
             }
             tilt = true;
@@ -85,13 +86,13 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
                 case EAST:
                 case SOUTH:
                 case WEST:
-                    pitchToTarget -= tiltPitchAmount;
+                    setPitchToTarget(pitchToTarget -= tiltPitchAmount);
                     break;
                 case NORTHEAST:
                 case SOUTHEAST:
                 case SOUTHWEST:
                 case NORTHWEST:
-                    pitchToTarget -= (tiltPitchAmount + 15);
+                    setPitchToTarget(pitchToTarget -= (tiltPitchAmount + 15));
                     break;
             }
             tilt = true;

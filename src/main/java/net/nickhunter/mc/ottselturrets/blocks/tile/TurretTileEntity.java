@@ -47,12 +47,17 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     private final SoundEvent chargeSound;
     private final SoundEvent firingSound;
 
+    private final DamageSource damageSource;
+
     private final int range;
     private final int damage;
     private final double timeToCharge;
     private final double timeToCoolDown;
     private final float pitchMax;
     private final float headPitchMax;
+    
+    private float headRotationXPrev;
+    private float headRotationYPrev;
 
     private Vec3d posOffset = new Vec3d(.5f, .75f, .5f);
 
@@ -78,8 +83,9 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     }
 
     public TurretTileEntity(TileEntityType<?> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
-            String firingAnimation, String resetAnimation, SoundEvent chargingSound, SoundEvent firingSound, int range,
-            int damage, double timeToCharge, double timeToCoolDown, float pitchMax, float headPitchMax) {
+            String firingAnimation, String resetAnimation, SoundEvent chargingSound, SoundEvent firingSound,
+            DamageSource damageSource, int range, int damage, double timeToCharge, double timeToCoolDown,
+            float pitchMax, float headPitchMax) {
         super(tileEntityTypeIn);
         this.idleAnimation = idleAnimation;
         this.aimingAnimation = aimingAnimation;
@@ -88,6 +94,8 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
 
         this.chargeSound = chargingSound;
         this.firingSound = firingSound;
+
+        this.damageSource = damageSource;
 
         this.range = range;
         this.damage = damage;
@@ -108,7 +116,15 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     public float getYawToTarget() {
         return yawToTarget;
     }
-    public boolean getLookingAtTarget(){
+
+    public float getHeadRotationXPrev() {
+        return headRotationXPrev;
+    }
+    public float getHeadRotationYPrev() {
+        return headRotationYPrev;
+    }
+
+    public boolean getLookingAtTarget() {
         return lookingAtTarget;
     }
 
@@ -130,6 +146,24 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
 
     public void setTurretState(TurretState turretState) {
         this.turretState = turretState;
+    }
+
+    public void setPitchToTarget(float pitchToTarget) {
+        if (pitchToTarget > pitchMax)
+            pitchToTarget = pitchMax;
+        if (pitchToTarget < -pitchMax)
+            pitchToTarget = -pitchMax;
+        this.pitchToTarget = pitchToTarget;
+    }
+
+    public void setYawToTarget(float yawToTarget) {
+        this.yawToTarget = yawToTarget;
+    }
+    public void setHeadRotationXPrev(float headRotationXPrev) {
+        this.headRotationXPrev = headRotationXPrev;
+    }
+    public void setHeadRotationYPrev(float headRotationYPrev) {
+        this.headRotationYPrev = headRotationYPrev;
     }
 
     @Override
@@ -216,7 +250,7 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
         playSoundEffect(firingSound);
 
         // Damage the target.
-        target.attackEntityFrom(new DamageSource(DamageSource.MAGIC.damageType), damage);
+        target.attackEntityFrom(damageSource, damage);
     }
 
     protected void coolDownComplete() {
@@ -245,7 +279,7 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
         // Find entities around this tile entity.
         List<LivingEntity> entities = Collections.emptyList();
 
-        entities = world.getEntitiesWithinAABB(MobEntity.class, area);
+        entities = world.getEntitiesWithinAABB(PlayerEntity.class, area);
         List<LivingEntity> validTargets = new ArrayList<LivingEntity>(entities);
         entities.forEach((entity) -> {
 

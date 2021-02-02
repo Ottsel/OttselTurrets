@@ -15,8 +15,8 @@ public abstract class TurretTileModel extends AnimatedGeoModel<TurretTileEntity>
     private float pitch = 0;
     private float yaw = 0;
 
-    private float headRotationXPrev;
-    private float headRotationYPrev;
+    float headRotationXPrev = 0;
+    float headRotationYPrev = 0;
 
     TurretTileModel(String modelLocation, String textureLocation, String animationLocation) {
 
@@ -30,14 +30,16 @@ public abstract class TurretTileModel extends AnimatedGeoModel<TurretTileEntity>
 
         pitch = entity.getPitchToTarget();
         yaw = entity.getYawToTarget();
+        
+        this.headRotationXPrev = pitch;
+        this.headRotationYPrev = yaw;
+
         GeckoLibCache.getInstance().parser.setValue("head_rotation_y", yaw);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x", pitch);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x_prev", headRotationXPrev);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_y_prev", headRotationYPrev);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x_max", entity.getHeadPitchMax());
 
-        headRotationXPrev = pitch;
-        headRotationYPrev = yaw;
         entity.setLookingAtTarget(false);
 
         super.setLivingAnimations(entity, uniqueID);

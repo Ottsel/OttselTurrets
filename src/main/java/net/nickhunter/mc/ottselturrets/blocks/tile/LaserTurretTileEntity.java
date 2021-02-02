@@ -1,11 +1,13 @@
 package net.nickhunter.mc.ottselturrets.blocks.tile;
 
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.nickhunter.mc.ottselturrets.registry.SoundRegistry;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
+import net.nickhunter.mc.ottselturrets.util.TurretDamageSource;
 
 public class LaserTurretTileEntity extends TiltingTurretTileEntity {
 
@@ -16,6 +18,8 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
 
     public static final SoundEvent CHARGE_SOUND = SoundRegistry.LASER_CHARGE.getSound();
     public static final SoundEvent FIRING_SOUND = SoundRegistry.LASER_BOLT.getSound();
+
+    public static final DamageSource DAMAGE_SOURCE = TurretDamageSource.LASER_TURRET;
 
     public static final int RANGE = 10;
     public static final int DAMAGE = 20;
@@ -30,7 +34,7 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
 
     public LaserTurretTileEntity() {
         super(TileRegistry.LASER_TURRET.get(), IDLE_ANIMATION, AIMING_ANIMATION, FIRING_ANIMATION, RESET_ANIMATION,
-                CHARGE_SOUND, FIRING_SOUND, RANGE, DAMAGE, CHARGE_TIME, COOLDOWN_TIME, PITCH_MAX, HEAD_PITCH_MAX,
+                CHARGE_SOUND, FIRING_SOUND, DAMAGE_SOURCE, RANGE, DAMAGE, CHARGE_TIME, COOLDOWN_TIME, PITCH_MAX, HEAD_PITCH_MAX,
                 TILT_PITCH_AMOUNT);
     }
 
