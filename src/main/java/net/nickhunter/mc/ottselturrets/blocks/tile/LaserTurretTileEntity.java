@@ -5,6 +5,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.registry.SoundRegistry;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
 import net.nickhunter.mc.ottselturrets.util.TurretDamageSource;
@@ -53,10 +54,10 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
             return;
 
         Vec3d posOffset = getPosOffset();
-        Vec3d posVec = new Vec3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.x,
+        Vec3d posVec = new Vec3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.y,
                 this.pos.getZ() + posOffset.z);
-        Vec3d posDiff = targetPos.add(targetOffset).subtract(posVec);
-        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec, posDiff.scale(256),
+        Vec3d posDiff = (targetPos.add(targetOffset)).subtract(posVec);
+        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec, posVec.add(posDiff.scale(RANGE)),
                 RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
         if (result.getType() == RayTraceResult.Type.MISS) {
             beamLength = 256;
