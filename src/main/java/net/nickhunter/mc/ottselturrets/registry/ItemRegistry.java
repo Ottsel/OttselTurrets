@@ -8,9 +8,10 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.blocks.BallistaTurretBlock;
 import net.nickhunter.mc.ottselturrets.blocks.LaserTurretBlock;
-import net.nickhunter.mc.ottselturrets.client.renderers.item.LaserWeaponItemRenderer;
+import net.nickhunter.mc.ottselturrets.blocks.ProjectorBlock;
+import net.nickhunter.mc.ottselturrets.client.renderers.item.ItemRenderer;
+import net.nickhunter.mc.ottselturrets.items.AnimatedBlockItem;
 import net.nickhunter.mc.ottselturrets.items.LaserWeaponItem;
-import net.nickhunter.mc.ottselturrets.items.TurretBlockItem;
 
 public class ItemRegistry {
         public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS,
@@ -22,11 +23,14 @@ public class ItemRegistry {
 
         // BlockItems
         public static final RegistryObject<Item> LASER_TURRET = ITEMS.register(LaserTurretBlock.RESOURCE_NAME,
-                        () -> new TurretBlockItem(BlockRegistry.LASER_TURRET.get()));
+                        () -> new AnimatedBlockItem(BlockRegistry.LASER_TURRET.get()));
         public static final RegistryObject<Item> BALLISTA_TURRET = ITEMS.register(BallistaTurretBlock.RESOURCE_NAME,
-                        () -> new TurretBlockItem(BlockRegistry.BALLISTA_TURRET.get()));
+                        () -> new AnimatedBlockItem(BlockRegistry.BALLISTA_TURRET.get()));
+        public static final RegistryObject<Item> PROJECTOR = ITEMS.register(ProjectorBlock.RESOURCE_NAME,
+                        () -> new AnimatedBlockItem(BlockRegistry.PROJECTOR.get()));
 
         // Items
         public static final RegistryObject<Item> LASER_WEAPON = ITEMS.register(LaserWeaponItem.RESOURCE_NAME,
-                        () -> new LaserWeaponItem(new Item.Properties().group(ItemGroupRegistry.MAIN).setISTER(() -> LaserWeaponItemRenderer::new)));
+                        () -> new LaserWeaponItem(new Item.Properties().group(ItemGroupRegistry.MAIN)
+                                        .setISTER(() -> ItemRenderer::new)));
 }

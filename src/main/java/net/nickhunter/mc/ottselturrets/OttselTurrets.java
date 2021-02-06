@@ -31,7 +31,6 @@ public class OttselTurrets {
         BlockRegistry.init();
         ItemRegistry.init();
         TileRegistry.init();
-        EntityRegistry.init();
         networkChannel.registerCommonMessages();
     }
 

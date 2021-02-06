@@ -1,0 +1,127 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.laser_projector.fire_beam": {
+			"animation_length": 0.4,
+			"bones": {
+				"beam": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.12": {
+							"vector": [0, 0, "-((beam_length+.2812)/2)*16"]
+						},
+						"0.4": {
+							"vector": [0, 0, "-((beam_length+.2812)/2)*16"]
+						}
+					},
+					"scale": {
+						"0.0": {
+							"vector": [1, 1, 1]
+						},
+						"0.12": {
+							"vector": [1, 1, "(beam_length+.2812)*16"]
+						},
+						"0.4": {
+							"vector": [1, 1, "(beam_length+.2812)*16"]
+						}
+					}
+				}
+			}
+		},
+		"animation.laser_projector.beam": {
+			"loop": true,
+			"animation_length": 0.04,
+			"bones": {
+				"beam": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, "-((beam_length+.2812)/2)*16"],
+							"easing": "easeInExpo"
+						},
+						"0.04": {
+							"vector": [0, 0, "-((beam_length+.2812)/2)*16"],
+							"easing": "easeInExpo"
+						}
+					},
+					"scale": {
+						"0.0": {
+							"vector": [1, 1, "(beam_length+.2812)*16"],
+							"easing": "easeInExpo"
+						},
+						"0.04": {
+							"vector": [1, 1, "(beam_length+.2812)*16"],
+							"easing": "easeInExpo"
+						}
+					}
+				}
+			}
+		},
+		"animation.laser_projector.retract_beam": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 0.2,
+			"bones": {
+				"beam": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, "-((beam_length+.2812)/2)*16"],
+							"easing": "easeInExpo"
+						},
+						"0.16": {
+							"vector": [0, 0, "-((beam_length+.2812))*16"],
+							"easing": "easeInExpo"
+						},
+						"0.2": {
+							"vector": [0, 0, 0],
+							"easing": "step",
+							"easingArgs": [2]
+						}
+					},
+					"scale": {
+						"0.0": {
+							"vector": [1, 1, "(beam_length+.2812)*16"],
+							"easing": "easeInExpo"
+						},
+						"0.16": {
+							"vector": [1, 1, 0],
+							"easing": "easeInExpo"
+						},
+						"0.2": {
+							"vector": [0, 0, 0],
+							"easing": "step",
+							"easingArgs": [2]
+						}
+					}
+				}
+			}
+		},
+		"animation.laser_projector.rotate_arm": {
+			"animation_length": 0.52,
+			"bones": {
+				"arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, "prev_rotation_y", 0]
+						},
+						"0.52": {
+							"vector": [0, "rotation_y", 0],
+							"easing": "easeInElastic"
+						}
+					}
+				},
+				"elbow": {
+					"rotation": {
+						"0.0": {
+							"vector": ["prev_rotation_x", 0, 0]
+						},
+						"0.52": {
+							"vector": ["rotation_x", 0, 0],
+							"easing": "easeInElastic"
+						}
+					}
+				}
+			}
+		}
+	}
+}

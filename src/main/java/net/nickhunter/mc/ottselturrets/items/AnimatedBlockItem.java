@@ -2,8 +2,8 @@ package net.nickhunter.mc.ottselturrets.items;
 
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
-import net.nickhunter.mc.ottselturrets.blocks.TurretBlock;
-import net.nickhunter.mc.ottselturrets.client.renderers.item.TurretItemRenderer;
+import net.nickhunter.mc.ottselturrets.blocks.AnimatedHorizontalBlock;
+import net.nickhunter.mc.ottselturrets.client.renderers.item.BlockItemRenderer;
 import net.nickhunter.mc.ottselturrets.registry.ItemGroupRegistry;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -12,12 +12,12 @@ import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
-public class TurretBlockItem extends BlockItem implements IAnimatable {
+public class AnimatedBlockItem extends BlockItem implements IAnimatable {
     public final AnimationFactory factory = new AnimationFactory(this);
 
-    public TurretBlockItem(TurretBlock blockTurret) {
-        super(blockTurret, new Item.Properties().group(ItemGroupRegistry.MAIN)
-                .setISTER(() -> () -> new TurretItemRenderer(blockTurret.getItemModel())));
+    public AnimatedBlockItem(AnimatedHorizontalBlock animatedBlock) {
+        super(animatedBlock, new Item.Properties().group(ItemGroupRegistry.MAIN)
+                .setISTER(() -> () -> new BlockItemRenderer(animatedBlock.getItemModel())));
     }
 
     private <P extends Item & IAnimatable> PlayState predicate(AnimationEvent<P> event) {

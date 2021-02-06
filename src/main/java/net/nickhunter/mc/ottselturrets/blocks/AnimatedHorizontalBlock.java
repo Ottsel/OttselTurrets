@@ -15,19 +15,18 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
-import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
-import net.nickhunter.mc.ottselturrets.items.TurretBlockItem;
+import net.nickhunter.mc.ottselturrets.items.AnimatedBlockItem;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 
-public class TurretBlock extends HorizontalBlock {
+public class AnimatedHorizontalBlock extends HorizontalBlock {
 
     private final VoxelShape hitboxAABB;
     private final String resourceName;
-    private final AnimatedGeoModel<TurretBlockItem> itemModel;
-    private final AnimatedGeoModel<TurretTileEntity> tileModel;
+    private final AnimatedGeoModel<AnimatedBlockItem> itemModel;
+    private final AnimatedGeoModel tileModel;
 
-    public TurretBlock(Material material, String resourceName, AnimatedGeoModel<TurretBlockItem> itemModel,
-            AnimatedGeoModel<TurretTileEntity> tileModel, VoxelShape hitboxAABB) {
+    public AnimatedHorizontalBlock(Material material, String resourceName, AnimatedGeoModel<AnimatedBlockItem> itemModel,
+            AnimatedGeoModel tileModel, VoxelShape hitboxAABB) {
         super(Properties.create(material).notSolid());
         this.resourceName = resourceName;
         this.itemModel = itemModel;
@@ -39,11 +38,11 @@ public class TurretBlock extends HorizontalBlock {
         return resourceName;
     }
 
-    public AnimatedGeoModel<TurretBlockItem> getItemModel() {
+    public AnimatedGeoModel<AnimatedBlockItem> getItemModel() {
         return itemModel;
     }
 
-    public AnimatedGeoModel<TurretTileEntity> getTileModel() {
+    public AnimatedGeoModel getTileModel() {
         return tileModel;
     }
 

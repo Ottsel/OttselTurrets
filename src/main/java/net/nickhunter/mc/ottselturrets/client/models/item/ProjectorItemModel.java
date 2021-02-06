@@ -5,11 +5,11 @@ import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.items.AnimatedBlockItem;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 
-public class LaserTurretItemModel extends AnimatedGeoModel<AnimatedBlockItem> {
+public class ProjectorItemModel extends AnimatedGeoModel<AnimatedBlockItem> {
 
     @Override
     public ResourceLocation getModelLocation(AnimatedBlockItem turretBlockItem) {
-        return new ResourceLocation(OttselTurrets.MOD_ID, "geo/block/turret_horizontal.geo.json");
+        return new ResourceLocation(OttselTurrets.MOD_ID, "geo/block/laser_projector.geo.json");
     }
 
     @Override
@@ -19,6 +19,6 @@ public class LaserTurretItemModel extends AnimatedGeoModel<AnimatedBlockItem> {
 
     @Override
     public ResourceLocation getAnimationFileLocation(AnimatedBlockItem turretBlockItem) {
-        return new ResourceLocation(OttselTurrets.MOD_ID, "animations/block/turret.animation.json");
+        return new ResourceLocation(OttselTurrets.MOD_ID, "animations/block/laser_projector.json");
     }
 }

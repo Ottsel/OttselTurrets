@@ -162,6 +162,10 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
     }
 
     public void setHeadRotationXPrev(float headRotationXPrev) {
+        if (headRotationXPrev > pitchMax)
+            headRotationXPrev = pitchMax;
+        if (headRotationXPrev < -pitchMax)
+            headRotationXPrev = -pitchMax;
         this.headRotationXPrev = headRotationXPrev;
     }
 
