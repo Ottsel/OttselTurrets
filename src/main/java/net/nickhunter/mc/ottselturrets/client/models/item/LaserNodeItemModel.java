@@ -5,7 +5,7 @@ import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.items.AnimatedBlockItem;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 
-public class ProjectorItemModel extends AnimatedGeoModel<AnimatedBlockItem> {
+public class LaserNodeItemModel extends AnimatedGeoModel<AnimatedBlockItem> {
 
     @Override
     public ResourceLocation getModelLocation(AnimatedBlockItem turretBlockItem) {

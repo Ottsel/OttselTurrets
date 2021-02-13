@@ -5,7 +5,7 @@ import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
 
 public class BlockItemRenderer extends GeoItemRenderer<AnimatedBlockItem> {
-    public BlockItemRenderer(AnimatedGeoModel<AnimatedBlockItem> turretItemModel) {
-        super(turretItemModel);
+    public BlockItemRenderer(AnimatedGeoModel<AnimatedBlockItem> blockItemModel) {
+        super(blockItemModel);
     }
 }

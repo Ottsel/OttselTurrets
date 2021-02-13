@@ -3,7 +3,7 @@
 
   "block.ottselturrets.laser_turret": "Laser Turret",
   "block.ottselturrets.ballista_turret": "Ballista Turret",
-  "block.ottselturrets.laser_projector": "Laser Node",
+  "block.ottselturrets.laser_node": "Laser Node",
 
   "item.ottselturrets.laser_weapon": "Arm Cannon",
 

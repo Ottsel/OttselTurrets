@@ -6,10 +6,11 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
+import net.nickhunter.mc.ottselturrets.blocks.AnimatedBlock;
 import net.nickhunter.mc.ottselturrets.blocks.AnimatedHorizontalBlock;
 import net.nickhunter.mc.ottselturrets.blocks.BallistaTurretBlock;
 import net.nickhunter.mc.ottselturrets.blocks.LaserTurretBlock;
-import net.nickhunter.mc.ottselturrets.blocks.ProjectorBlock;
+import net.nickhunter.mc.ottselturrets.blocks.LaserNodeBlock;
 
 public class BlockRegistry {
         public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,
@@ -24,7 +25,7 @@ public class BlockRegistry {
                         .register(LaserTurretBlock.RESOURCE_NAME, () -> new LaserTurretBlock());
         public static final RegistryObject<AnimatedHorizontalBlock> BALLISTA_TURRET = BLOCKS
                         .register(BallistaTurretBlock.RESOURCE_NAME, () -> new BallistaTurretBlock());
-        public static final RegistryObject<AnimatedHorizontalBlock> PROJECTOR = BLOCKS
-                        .register(ProjectorBlock.RESOURCE_NAME, () -> new ProjectorBlock());
+        public static final RegistryObject<AnimatedBlock> LASER_NODE = BLOCKS
+                        .register(LaserNodeBlock.RESOURCE_NAME, () -> new LaserNodeBlock());
 
 }

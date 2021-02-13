@@ -2,6 +2,7 @@ package net.nickhunter.mc.ottselturrets.items;
 
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.nickhunter.mc.ottselturrets.blocks.AnimatedBlock;
 import net.nickhunter.mc.ottselturrets.blocks.AnimatedHorizontalBlock;
 import net.nickhunter.mc.ottselturrets.client.renderers.item.BlockItemRenderer;
 import net.nickhunter.mc.ottselturrets.registry.ItemGroupRegistry;
@@ -14,6 +15,11 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 public class AnimatedBlockItem extends BlockItem implements IAnimatable {
     public final AnimationFactory factory = new AnimationFactory(this);
+
+    public AnimatedBlockItem(AnimatedBlock animatedBlock) {
+        super(animatedBlock, new Item.Properties().group(ItemGroupRegistry.MAIN)
+                .setISTER(() -> () -> new BlockItemRenderer(animatedBlock.getItemModel())));
+    }
 
     public AnimatedBlockItem(AnimatedHorizontalBlock animatedBlock) {
         super(animatedBlock, new Item.Properties().group(ItemGroupRegistry.MAIN)

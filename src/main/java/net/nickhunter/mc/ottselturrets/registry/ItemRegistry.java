@@ -8,7 +8,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.blocks.BallistaTurretBlock;
 import net.nickhunter.mc.ottselturrets.blocks.LaserTurretBlock;
-import net.nickhunter.mc.ottselturrets.blocks.ProjectorBlock;
+import net.nickhunter.mc.ottselturrets.blocks.LaserNodeBlock;
 import net.nickhunter.mc.ottselturrets.client.renderers.item.ItemRenderer;
 import net.nickhunter.mc.ottselturrets.items.AnimatedBlockItem;
 import net.nickhunter.mc.ottselturrets.items.LaserWeaponItem;
@@ -26,8 +26,8 @@ public class ItemRegistry {
                         () -> new AnimatedBlockItem(BlockRegistry.LASER_TURRET.get()));
         public static final RegistryObject<Item> BALLISTA_TURRET = ITEMS.register(BallistaTurretBlock.RESOURCE_NAME,
                         () -> new AnimatedBlockItem(BlockRegistry.BALLISTA_TURRET.get()));
-        public static final RegistryObject<Item> PROJECTOR = ITEMS.register(ProjectorBlock.RESOURCE_NAME,
-                        () -> new AnimatedBlockItem(BlockRegistry.PROJECTOR.get()));
+        public static final RegistryObject<Item> LASER_NODE = ITEMS.register(LaserNodeBlock.RESOURCE_NAME,
+                        () -> new AnimatedBlockItem(BlockRegistry.LASER_NODE.get()));
 
         // Items
         public static final RegistryObject<Item> LASER_WEAPON = ITEMS.register(LaserWeaponItem.RESOURCE_NAME,
