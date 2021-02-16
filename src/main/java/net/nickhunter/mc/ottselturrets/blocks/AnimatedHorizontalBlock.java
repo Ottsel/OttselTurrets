@@ -21,31 +21,31 @@ import software.bernie.geckolib3.model.AnimatedGeoModel;
 
 public class AnimatedHorizontalBlock extends HorizontalBlock {
 
-    private final VoxelShape hitboxAABB;
-    private final String resourceName;
-    private final AnimatedGeoModel<AnimatedBlockItem> itemModel;
-    private final AnimatedGeoModel<? extends AnimatedTileEntity> tileModel;
+    private final VoxelShape HITBOX_AABB;
+    private final String RESOURCE_NAME;
+    private final AnimatedGeoModel<AnimatedBlockItem> ITEM_MODEL;
+    private final AnimatedGeoModel<? extends AnimatedTileEntity> TILE_MODEL;
 
     public AnimatedHorizontalBlock(Material material, String resourceName,
             AnimatedGeoModel<AnimatedBlockItem> itemModel, AnimatedGeoModel<? extends AnimatedTileEntity> tileModel,
             VoxelShape hitboxAABB) {
         super(Properties.create(material).notSolid());
-        this.resourceName = resourceName;
-        this.itemModel = itemModel;
-        this.tileModel = tileModel;
-        this.hitboxAABB = hitboxAABB;
+        this.RESOURCE_NAME = resourceName;
+        this.ITEM_MODEL = itemModel;
+        this.TILE_MODEL = tileModel;
+        this.HITBOX_AABB = hitboxAABB;
     }
 
     public String getResourceName() {
-        return resourceName;
+        return RESOURCE_NAME;
     }
 
     public AnimatedGeoModel<AnimatedBlockItem> getItemModel() {
-        return itemModel;
+        return ITEM_MODEL;
     }
 
     public AnimatedGeoModel<? extends AnimatedTileEntity> getTileModel() {
-        return tileModel;
+        return TILE_MODEL;
     }
 
     @Override
@@ -59,6 +59,7 @@ public class AnimatedHorizontalBlock extends HorizontalBlock {
         return BlockRenderType.ENTITYBLOCK_ANIMATED;
     }
 
+    @Override
     protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(HORIZONTAL_FACING);
     }
@@ -66,7 +67,7 @@ public class AnimatedHorizontalBlock extends HorizontalBlock {
     @Nonnull
     public VoxelShape getShape(BlockState state, @Nonnull IBlockReader worldIn, @Nonnull BlockPos pos,
             @Nonnull ISelectionContext context) {
-        return hitboxAABB;
+        return HITBOX_AABB;
     }
 
     @Nonnull

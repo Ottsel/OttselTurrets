@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,8 +23,9 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
-import net.nickhunter.mc.ottselturrets.network.packets.PacketTurretUpdate;
+import net.nickhunter.mc.ottselturrets.blocks.TurretBlock;
 import net.nickhunter.mc.ottselturrets.util.TiltDirection;
+import net.nickhunter.mc.ottselturrets.util.TurretState;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
@@ -66,7 +68,6 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     private float yawToTarget;
     private float pitchToTarget;
 
-    private TurretState turretState = TurretState.SCANNING;
     private TurretState lastTurretState = TurretState.SCANNING;
 
     private boolean chargeSoundHasPlayed;
@@ -78,14 +79,10 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     private final AnimationFactory factory = new AnimationFactory(this);
 
-    public enum TurretState {
-        SCANNING, AIMING, FIRING
-    }
-
-    public TurretTileEntity(TileEntityType<? extends AnimatedTileEntity> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
-            String firingAnimation, String resetAnimation, SoundEvent chargingSound, SoundEvent firingSound,
-            DamageSource damageSource, int range, int damage, double timeToCharge, double timeToCoolDown,
-            float pitchMax, float headPitchMax) {
+    public TurretTileEntity(TileEntityType<? extends AnimatedTileEntity> tileEntityTypeIn, String idleAnimation,
+            String aimingAnimation, String firingAnimation, String resetAnimation, SoundEvent chargingSound,
+            SoundEvent firingSound, DamageSource damageSource, int range, int damage, double timeToCharge,
+            double timeToCoolDown, float pitchMax, float headPitchMax) {
         super(tileEntityTypeIn);
         this.idleAnimation = idleAnimation;
         this.aimingAnimation = aimingAnimation;
@@ -137,16 +134,26 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         return posOffset;
     }
 
-    public TurretState getTurretState() {
-        return turretState;
+    public TurretState getState() {
+        if (world != null) {
+            return world.getBlockState(pos).get(TurretBlock.TURRET_STATE);
+        } else {
+            return TurretState.SCANNING;
+        }
     }
 
     public void setLookingAtTarget(boolean lookingAtTarget) {
         this.lookingAtTarget = lookingAtTarget;
     }
 
-    public void setTurretState(TurretState turretState) {
-        this.turretState = turretState;
+    public void setState(TurretState turretState) {
+        if (world != null) {
+            BlockState blockState = world.getBlockState(pos);
+            if (blockState.get(TurretBlock.TURRET_STATE) != turretState)
+                world.setBlockState(pos, blockState.with(TurretBlock.TURRET_STATE, turretState), 2);
+        } else {
+            OttselTurrets.LOGGER.error(pos + " Failed to set turret state: " + turretState);
+        }
     }
 
     public void setPitchToTarget(float pitchToTarget) {
@@ -211,7 +218,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     }
 
     protected void targetsOnServer() {
-        updateClient(TurretState.AIMING);
+        setState(TurretState.AIMING);
         if (coolDownTimer != -1) {
             coolDownTimer();
             return;
@@ -253,7 +260,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     // Facilitates firing the turret.
     protected void fireTurret(LivingEntity target) {
 
-        updateClient(TurretState.FIRING);
+        setState(TurretState.FIRING);
         playSoundEffect(firingSound);
 
         // Damage the target.
@@ -262,12 +269,12 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     protected void coolDownComplete() {
         chargeSoundHasPlayed = false;
-        updateClient(TurretState.SCANNING);
+        setState(TurretState.SCANNING);
     }
 
     protected void resetComplete() {
         chargeSoundHasPlayed = false;
-        updateClient(TurretState.SCANNING);
+        setState(TurretState.SCANNING);
     }
 
     protected void clientTrackTarget() {
@@ -308,7 +315,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         Vector3d posVec = new Vector3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.y,
                 this.pos.getZ() + posOffset.z);
         return world.rayTraceBlocks(new RayTraceContext(posVec, target.add(targetOffset),
-                RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
+                RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null));
     }
 
     protected final LivingEntity getClosestTarget(List<LivingEntity> targets) {
@@ -422,15 +429,6 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
                 (float) (1 / Math.sqrt((this.pos.distanceSq(playerPos)))), 1);
     }
 
-    private void updateClient(TurretState turretState) {
-        if (this.turretState == turretState)
-            return;
-        this.turretState = turretState;
-        if (world != null)
-            OttselTurrets.getNetworkChannel().sendToTrackingChunk(new PacketTurretUpdate(turretState, pos),
-                    world.getChunkAt(pos));
-    }
-
     private int getYawOffset() {
         switch (this.getBlockState().get(HORIZONTAL_FACING)) {
             case NORTH:
@@ -465,7 +463,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     private void animateHead(AnimationController controller) {
         AnimationBuilder animationBuilder = new AnimationBuilder();
-        switch (turretState) {
+        switch (getState()) {
             case SCANNING:
                 switch (lastTurretState) {
                     case SCANNING:

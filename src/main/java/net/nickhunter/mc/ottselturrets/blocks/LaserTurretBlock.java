@@ -13,7 +13,7 @@ import net.nickhunter.mc.ottselturrets.client.models.tile.LaserTurretTileModel;
 import net.nickhunter.mc.ottselturrets.items.AnimatedBlockItem;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 
-public class LaserTurretBlock extends AnimatedHorizontalBlock {
+public class LaserTurretBlock extends TurretBlock {
 
     public static final String RESOURCE_NAME = "laser_turret";
     public static final AnimatedGeoModel<AnimatedBlockItem> ITEM_MODEL = new LaserTurretItemModel();

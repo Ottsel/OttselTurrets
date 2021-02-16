@@ -13,7 +13,7 @@ import net.nickhunter.mc.ottselturrets.client.models.tile.BallistaTurretTileMode
 import net.nickhunter.mc.ottselturrets.items.AnimatedBlockItem;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 
-public class BallistaTurretBlock extends AnimatedHorizontalBlock {
+public class BallistaTurretBlock extends TurretBlock {
 
     public static final String RESOURCE_NAME = "ballista_turret";
     public static final AnimatedGeoModel<AnimatedBlockItem> ITEM_MODEL = new BallistaTurretItemModel();
