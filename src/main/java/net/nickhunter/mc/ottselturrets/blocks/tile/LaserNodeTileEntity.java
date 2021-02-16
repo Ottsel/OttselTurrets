@@ -83,7 +83,6 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
             }
         }
         world.notifyBlockUpdate(pos, blockState, world.getBlockState(pos), 2);
-        OttselTurrets.LOGGER.info(obstruction);
         markDirty();
     }
 
@@ -237,7 +236,7 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
             setState(NodeState.IDLE);
             return;
         }
-        OttselTurrets.LOGGER.info(pos + " updateServer: " + getState());
+        OttselTurrets.LOGGER.debug(pos + " updateServer: " + getState());
         switch (getState()) {
             case PAIRED_IDLE:
                 if (world.isBlockPowered(pos)) {
@@ -295,14 +294,13 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
     }
 
     private void updateClient() {
-        OttselTurrets.LOGGER.info(pos + "updateClient: " + getState());
+        OttselTurrets.LOGGER.debug(pos + "updateClient: " + getState());
         switch (getState()) {
             case PAIRED_IDLE:
             case PAIRED_RX:
                 pointTo(partnerNodePos);
                 break;
             case PAIRED_RX_OBSTRUCTED:
-                OttselTurrets.LOGGER.info("obstruction: " + obstruction);
                 pointTo(partnerNodePos);
                 break;
             case PAIRED_TX:
@@ -317,7 +315,7 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
     }
 
     private void pointTo(BlockPos targetPos) {
-        OttselTurrets.LOGGER.info(pos + "pointTo: " + targetPos);
+        OttselTurrets.LOGGER.debug(pos + " pointTo: " + targetPos);
         setYawToTarget(calculateYaw(getHeadOffset(targetPos)));
         setPitchToTarget(calculatePitch(getHeadOffset(targetPos)));
     }
@@ -424,7 +422,6 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
                 BlockPos obs = new BlockPos(result.getHitVec());
                 if (obstruction == null || !(new Vector3i(obstruction.getX(), obstruction.getY(), obstruction.getZ())
                         .equals(new Vector3i(obs.getX(), obs.getY(), obs.getZ())))) {
-                    OttselTurrets.LOGGER.info("set obstruction: " + obs);
                     setObstruction(obs);
                 }
             }
