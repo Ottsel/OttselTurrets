@@ -2,14 +2,13 @@ package net.nickhunter.mc.ottselturrets.blocks.tile;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -25,7 +24,6 @@ import net.nickhunter.mc.ottselturrets.blocks.IOptical;
 import net.nickhunter.mc.ottselturrets.blocks.LaserNodeBlock;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
 import net.nickhunter.mc.ottselturrets.util.NodeState;
-import software.bernie.geckolib3.core.IAnimatable;
 import software.bernie.geckolib3.core.PlayState;
 import software.bernie.geckolib3.core.builder.AnimationBuilder;
 import software.bernie.geckolib3.core.controller.AnimationController;
@@ -34,31 +32,30 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 @SuppressWarnings("rawtypes")
-public class LaserNodeTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable, IOptical {
+public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickableTileEntity, IOptical {
 
     public static final String IDLE_ANIMATION = "animation.laser_projector.idle";
-    public static final String LEAVE_IDLE_ANIMATION = "animation.laser_projector.leave_idle";
     public static final String FIRE_BEAM_ANIMATION = "animation.laser_projector.fire_beam";
     public static final String BEAM_ANIMATION = "animation.laser_projector.beam";
-    public static final String RETRACT_BEAM_ANIMATION = "animation.laser_projector.retract_beam";
     public static final String ROTATE_ANIMATION = "animation.laser_projector.rotate_arm";
     public static final String PAIR_ANIMATION = "animation.laser_projector.pairing";
+    public static final String FIRE_BEAM_REMOTE_ANIMATION = "animation.laser_projector.fire_beam_remote";
+    public static final String RECEIVE_BEAM_ANIMATION = "animation.laser_projector.receive_beam";
 
-    public static final int RANGE = 256;
-    public static final float pitchMax = 45;
+    public static final float PITCH_MAX = 55;
 
     private final AnimationFactory factory = new AnimationFactory(this);
 
     private static LaserNodeTileEntity pairingNode;
 
-    private BlockPos partnerNode;
+    private BlockPos partnerNodePos;
+    private BlockPos obstruction;
 
-    private int lastPlayerTicks;
+    private int lastUseTicks;
 
-    private float yawPrev, pitchPrev;
     private float yaw, pitch;
-
     private float beamLength;
+    private float beamStart;
 
     public boolean northOptical, eastOptical, southOptical, westOptical;
 
@@ -66,27 +63,28 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         super(TileRegistry.LASER_NODE.get());
     }
 
-    public static LaserNodeTileEntity getPairingNode() {
-        return pairingNode;
-    }
-
-    public static void setPairingNode(LaserNodeTileEntity pairingNode) {
-        LaserNodeTileEntity.pairingNode = pairingNode;
-    }
-
-    public BlockPos getPartnerNode() {
-        return partnerNode;
-    }
-
-    public void setPartnerNode(BlockPos partnerNode) {
-        if (partnerNode != this.partnerNode) {
-            this.partnerNode = partnerNode;
+    public void setPartnerNode(BlockPos partnerNodePos) {
+        if (partnerNodePos != this.partnerNodePos) {
+            this.partnerNodePos = partnerNodePos;
             this.markDirty();
         }
     }
 
-    public float getPitchMax() {
-        return pitchMax;
+    public void setObstruction(BlockPos obstruction) {
+        this.obstruction = obstruction;
+        BlockState blockState = world.getBlockState(pos);
+        if (obstruction == null) {
+            if (blockState.get(LaserNodeBlock.OBSTRUCTED)) {
+                world.setBlockState(pos, blockState.with(LaserNodeBlock.OBSTRUCTED, false), 2);
+            }
+        } else {
+            if (!blockState.get(LaserNodeBlock.OBSTRUCTED)) {
+                world.setBlockState(pos, blockState.with(LaserNodeBlock.OBSTRUCTED, true), 2);
+            }
+        }
+        world.notifyBlockUpdate(pos, blockState, world.getBlockState(pos), 2);
+        OttselTurrets.LOGGER.info(obstruction);
+        markDirty();
     }
 
     public float getPitchToTarget() {
@@ -97,23 +95,19 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         return yaw;
     }
 
-    public float getPitchPrev() {
-        return pitchPrev;
-    }
-
-    public float getYawPrev() {
-        return yawPrev;
-    }
-
     public float getBeamLength() {
         return beamLength;
     }
 
+    public float getBeamStart() {
+        return beamStart;
+    }
+
     public void setPitchToTarget(float pitch) {
-        if (pitch > pitchMax)
-            pitch = pitchMax;
-        if (pitch < -pitchMax)
-            pitch = -pitchMax;
+        if (pitch > PITCH_MAX)
+            pitch = PITCH_MAX;
+        if (pitch < -PITCH_MAX)
+            pitch = -PITCH_MAX;
         this.pitch = pitch;
     }
 
@@ -121,34 +115,29 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         this.yaw = yawToTarget;
     }
 
-    public void setPitchPrev(float pitchPrev) {
-        if (pitchPrev > pitchMax)
-            pitchPrev = pitchMax;
-        if (pitchPrev < -pitchMax)
-            pitchPrev = -pitchMax;
-        this.pitchPrev = pitchPrev;
-    }
-
-    public void setHeadRotationYPrev(float yawPrev) {
-        this.yawPrev = yawPrev;
-    }
-
     @Override
     public CompoundNBT write(CompoundNBT nbt) {
         OttselTurrets.LOGGER.debug(pos + " write");
-        if (partnerNode != null) {
+        if (partnerNodePos != null) {
             nbt.putBoolean("has_partner", true);
-            nbt.putInt("partner_x", partnerNode.getX());
-            nbt.putInt("partner_y", partnerNode.getY());
-            nbt.putInt("partner_z", partnerNode.getZ());
+            nbt.putInt("partner_x", partnerNodePos.getX());
+            nbt.putInt("partner_y", partnerNodePos.getY());
+            nbt.putInt("partner_z", partnerNodePos.getZ());
+            if (obstruction != null) {
+                nbt.putBoolean("has_obstruction", true);
+                nbt.putDouble("obstruction_x", obstruction.getX());
+                nbt.putDouble("obstruction_y", obstruction.getY());
+                nbt.putDouble("obstruction_z", obstruction.getZ());
+            }
+
         }
         return super.write(nbt);
     }
 
     @Override
     public void read(BlockState state, CompoundNBT nbt) {
+        OttselTurrets.LOGGER.debug(pos + " read");
         super.read(state, nbt);
-        OttselTurrets.LOGGER.info(pos + " read");
         if (nbt.getBoolean("has_partner")) {
             setPartnerNode(new BlockPos(nbt.getInt("partner_x"), nbt.getInt("partner_y"), nbt.getInt("partner_z")));
         }
@@ -189,9 +178,13 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     // Unpackage NBT data
-    public void loadNBT(CompoundNBT nbt) {
+    private void loadNBT(CompoundNBT nbt) {
         if (nbt.getBoolean("has_partner")) {
             setPartnerNode(new BlockPos(nbt.getInt("partner_x"), nbt.getInt("partner_y"), nbt.getInt("partner_z")));
+            if (nbt.getBoolean("has_obstruction")) {
+                setObstruction(new BlockPos(nbt.getDouble("obstruction_x"), nbt.getDouble("obstruction_y"),
+                        nbt.getDouble("obstruction_z")));
+            }
         }
     }
 
@@ -210,16 +203,15 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     private void serverTick() {
-        if (partnerNode != null) {
+        if (partnerNodePos != null) {
             switch (world.getBlockState(pos).get(LaserNodeBlock.NODE_STATE)) {
                 case PAIRED_RX:
-                    if (checkForObstruction(getHeadOffset(partnerNode), getHeadOffset(pos))) {
+                    if (checkForObstruction(getHeadOffset(partnerNodePos), getHeadOffset(pos))) {
                         updateServer();
                     }
                     break;
                 case PAIRED_RX_OBSTRUCTED:
-                    OttselTurrets.LOGGER.info(checkForObstruction(getHeadOffset(partnerNode), getHeadOffset(pos)));
-                    if (!checkForObstruction(getHeadOffset(partnerNode), getHeadOffset(pos))) {
+                    if (!checkForObstruction(getHeadOffset(partnerNodePos), getHeadOffset(pos))) {
                         updateServer();
                     }
                     break;
@@ -234,43 +226,34 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
     }
 
     private void clientTick() {
-        if (partnerNode != null) {
-            switch (world.getBlockState(pos).get(LaserNodeBlock.NODE_STATE)) {
-                case PAIRED_RX:
-                case PAIRED_RX_OBSTRUCTED:
-                    checkForObstruction(getHeadOffset(partnerNode), getHeadOffset(pos));
-                    break;
-                case PAIRED_TX:
-                    checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNode));
-                    break;
-                case PAIRED_IDLE:
-                case PAIRING:
-                case IDLE:
-                default:
-                    break;
-
-            }
-        }
+        UpdateNeighborConnections();
+        if (partnerNodePos != null
+                && (getState() == NodeState.PAIRED_RX_OBSTRUCTED || getState() == NodeState.PAIRED_RX))
+            checkForObstruction(getHeadOffset(partnerNodePos), getHeadOffset(pos));
     }
 
     private void updateServer() {
+        if (partnerNodePos == null) {
+            setState(NodeState.IDLE);
+            return;
+        }
         OttselTurrets.LOGGER.info(pos + " updateServer: " + getState());
         switch (getState()) {
             case PAIRED_IDLE:
                 if (world.isBlockPowered(pos)) {
                     setState(NodeState.PAIRED_TX);
-                    if (checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNode))) {
-                        setState(partnerNode, NodeState.PAIRED_RX_OBSTRUCTED);
+                    if (checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNodePos))) {
+                        setState(partnerNodePos, NodeState.PAIRED_RX_OBSTRUCTED);
                     } else {
-                        setState(partnerNode, NodeState.PAIRED_RX);
+                        setState(partnerNodePos, NodeState.PAIRED_RX);
                     }
                 } else {
-                    setState(partnerNode, NodeState.PAIRED_IDLE);
+                    setState(partnerNodePos, NodeState.PAIRED_IDLE);
                 }
                 break;
             case PAIRED_RX:
-                if (world.isBlockPowered(partnerNode)) {
-                    if (checkForObstruction(getHeadOffset(partnerNode), getHeadOffset(pos))) {
+                if (world.isBlockPowered(partnerNodePos)) {
+                    if (checkForObstruction(getHeadOffset(partnerNodePos), getHeadOffset(pos))) {
                         setState(NodeState.PAIRED_RX_OBSTRUCTED);
                     }
                 } else {
@@ -278,8 +261,8 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
                 }
                 break;
             case PAIRED_RX_OBSTRUCTED:
-                if (world.isBlockPowered(partnerNode)) {
-                    if (!checkForObstruction(getHeadOffset(partnerNode), getHeadOffset(pos))) {
+                if (world.isBlockPowered(partnerNodePos)) {
+                    if (!checkForObstruction(getHeadOffset(partnerNodePos), getHeadOffset(pos))) {
                         setState(NodeState.PAIRED_RX);
                     }
                 } else {
@@ -288,18 +271,17 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
                 break;
             case PAIRED_TX:
                 if (world.isBlockPowered(pos)) {
-                    if (checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNode))) {
-                        setState(partnerNode, NodeState.PAIRED_RX_OBSTRUCTED);
+                    if (checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNodePos))) {
+                        setState(partnerNodePos, NodeState.PAIRED_RX_OBSTRUCTED);
                     } else {
-                        setState(partnerNode, NodeState.PAIRED_RX);
+                        setState(partnerNodePos, NodeState.PAIRED_RX);
                     }
                 } else {
                     setState(NodeState.PAIRED_IDLE);
-                    setState(partnerNode, NodeState.PAIRED_IDLE);
-                    if (world.isBlockLoaded(partnerNode)) {
-                        LaserNodeTileEntity laserNode = getTileEntityFromPos(partnerNode);
+                    setState(partnerNodePos, NodeState.PAIRED_IDLE);
+                    if (world.isBlockLoaded(partnerNodePos)) {
+                        LaserNodeTileEntity laserNode = getTileEntityFromPos(partnerNodePos);
                         if (laserNode != null) {
-                            OttselTurrets.LOGGER.info("hello");
                             laserNode.updateServer();
                         }
                     }
@@ -317,16 +299,15 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         switch (getState()) {
             case PAIRED_IDLE:
             case PAIRED_RX:
-                pointTo(partnerNode);
-                pointTo(partnerNode);
+                pointTo(partnerNodePos);
                 break;
             case PAIRED_RX_OBSTRUCTED:
-                pointTo(partnerNode);
-                checkForObstruction(getHeadOffset(partnerNode), getHeadOffset(pos));
+                OttselTurrets.LOGGER.info("obstruction: " + obstruction);
+                pointTo(partnerNodePos);
                 break;
             case PAIRED_TX:
-                pointTo(partnerNode);
-                checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNode));
+                pointTo(partnerNodePos);
+                checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNodePos));
                 break;
             case PAIRING:
             case IDLE:
@@ -357,13 +338,13 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         if (world.isRemote)
             return;
         if (world.getBlockState(pos).get(LaserNodeBlock.NODE_STATE) != nodeState) {
-            world.setBlockState(pos, world.getBlockState(pos).with(LaserNodeBlock.NODE_STATE, nodeState)
-                    .with(BlockStateProperties.POWERED, (nodeState == NodeState.PAIRED_RX)), 2);
+            world.setBlockState(pos, world.getBlockState(pos).with(LaserNodeBlock.NODE_STATE, nodeState), 2);
             world.notifyNeighborsOfStateChange(pos, world.getBlockState(pos).getBlock());
         }
+
     }
 
-    public void onBlockDestroyed(PlayerEntity player) {
+    public void onBlockDestroyed() {
         switch (getState()) {
             case IDLE:
             default:
@@ -383,9 +364,9 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
     public void onBlockActivated(PlayerEntity player, BlockRayTraceResult hit, Hand handIn) {
         if (world.isRemote)
             return;
-        if (player.ticksExisted - lastPlayerTicks < 15)
+        if (player.ticksExisted - lastUseTicks < 15)
             return;
-        lastPlayerTicks = player.ticksExisted;
+        lastUseTicks = player.ticksExisted;
 
         if (player.isSneaking()) {
             switch (getState()) {
@@ -401,7 +382,7 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
                 case PAIRED_RX:
                 case PAIRED_TX:
                 case PAIRED_RX_OBSTRUCTED:
-                    onBlockDestroyed(player);
+                    onBlockDestroyed();
                     break;
                 case PAIRING:
                     pairingNode = null;
@@ -414,10 +395,14 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
             switch (getState()) {
                 case IDLE:
                     if (pairingNode != null) {
-                        setPartnerNode(pairingNode.pos);
-                        pairingNode = null;
+                        if (world.getDimensionKey() == pairingNode.getWorld().getDimensionKey()) {
+                            if (Math.abs(calculatePitch(getHeadOffset(pairingNode.pos))) > PITCH_MAX)
+                                break;
+                            setPartnerNode(pairingNode.pos);
+                            pair();
+                            pairingNode = null;
+                        }
                     }
-                    pair();
                     break;
                 case PAIRED_IDLE:
                 case PAIRED_RX:
@@ -434,44 +419,58 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         RayTraceResult result = rayTraceToTarget(origin, target);
         if (result.getType() != Type.MISS) {
             beamLength = (float) origin.distanceTo(result.getHitVec()) - .15f;
+            beamStart = (float) target.distanceTo(origin) - .37f;
+            if (!world.isRemote) {
+                BlockPos obs = new BlockPos(result.getHitVec());
+                if (obstruction == null || !(new Vector3i(obstruction.getX(), obstruction.getY(), obstruction.getZ())
+                        .equals(new Vector3i(obs.getX(), obs.getY(), obs.getZ())))) {
+                    OttselTurrets.LOGGER.info("set obstruction: " + obs);
+                    setObstruction(obs);
+                }
+            }
             return true;
         } else {
             beamLength = (float) origin.distanceTo(target) - .4f;
+            beamStart = beamLength;
+            if (!world.isRemote) {
+                if (obstruction != null)
+                    obstruction = null;
+            }
             return false;
         }
     }
 
     private void pair() {
-        if (partnerNode != null) {
-            LaserNodeTileEntity partnerTileEntity = getTileEntityFromPos(partnerNode);
-            partnerTileEntity.setPartnerNode(this.pos);
-            if (world.isBlockPowered(partnerNode)) {
-                if (checkForObstruction(getHeadOffset(partnerNode), getHeadOffset(pos))) {
-                    setState(NodeState.PAIRED_RX_OBSTRUCTED);
-                } else {
-                    setState(NodeState.PAIRED_RX);
-                }
-                setState(partnerNode, NodeState.PAIRED_TX);
+        LaserNodeTileEntity partnerTileEntity = getTileEntityFromPos(partnerNodePos);
+        partnerTileEntity.setPartnerNode(this.pos);
+        if (world.isBlockPowered(partnerNodePos)) {
+            if (checkForObstruction(getHeadOffset(partnerNodePos), getHeadOffset(pos))) {
+                setState(NodeState.PAIRED_RX_OBSTRUCTED);
             } else {
-                setState(partnerNode, NodeState.PAIRED_IDLE);
-                if (world.getBlockState(pos).get(LaserNodeBlock.RECEIVING_POWER)) {
-                    setState(NodeState.PAIRED_TX);
-                } else {
-                    setState(NodeState.PAIRED_IDLE);
-                }
+                setState(NodeState.PAIRED_RX);
             }
+            setState(partnerNodePos, NodeState.PAIRED_TX);
         } else {
-            OttselTurrets.LOGGER.debug(pos + "Failed to pair with partner");
+            if (world.getBlockState(pos).get(LaserNodeBlock.RECEIVING_POWER)) {
+                setState(NodeState.PAIRED_TX);
+                if (checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNodePos))) {
+                    setState(partnerNodePos, NodeState.PAIRED_RX_OBSTRUCTED);
+                } else {
+                    setState(partnerNodePos, NodeState.PAIRED_RX);
+                }
+            } else {
+                setState(NodeState.PAIRED_IDLE);
+                setState(partnerNodePos, NodeState.PAIRED_IDLE);
+            }
         }
     }
 
     private void unpair() {
         if (!world.isRemote) {
-            if (partnerNode != null) {
-                setState(partnerNode, NodeState.IDLE);
-                getTileEntityFromPos(partnerNode).setPartnerNode(null);
+            if (partnerNodePos != null) {
+                setState(partnerNodePos, NodeState.IDLE);
+                getTileEntityFromPos(partnerNodePos).setPartnerNode(null);
             }
-            setState(NodeState.IDLE);
         }
     }
 
@@ -485,7 +484,7 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         return null;
     }
 
-    public void neighborConnections() {
+    public void UpdateNeighborConnections() {
         if (world == null)
             return;
 
@@ -496,27 +495,55 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
 
         if (north != null && north instanceof IOptical) {
             northOptical = true;
+            ((IOptical) north).SetNeighborConnection(Direction.SOUTH, true);
         } else {
             northOptical = false;
         }
         if (south != null && south instanceof IOptical) {
             southOptical = true;
+            ((IOptical) south).SetNeighborConnection(Direction.NORTH, true);
         } else {
             southOptical = false;
         }
         if (east != null && east instanceof IOptical) {
             eastOptical = true;
+            ((IOptical) east).SetNeighborConnection(Direction.WEST, true);
         } else {
             eastOptical = false;
         }
         if (west != null && west instanceof IOptical) {
             westOptical = true;
+            ((IOptical) west).SetNeighborConnection(Direction.EAST, true);
         } else {
             westOptical = false;
         }
     }
 
-    private final RayTraceResult rayTraceToTarget(Vector3d origin, Vector3d target) {
+    public void SetNeighborConnection(Direction direction, boolean enabled) {
+        switch (direction) {
+            case WEST:
+                westOptical = enabled;
+                break;
+            case EAST:
+                eastOptical = enabled;
+                break;
+            case NORTH:
+                northOptical = enabled;
+                break;
+            case SOUTH:
+                southOptical = enabled;
+                break;
+            case DOWN:
+            case UP:
+            default:
+                OttselTurrets.LOGGER.error(pos + " Could not " + (enabled ? "set" : "unset")
+                        + " neighbor connection on side: " + direction);
+                break;
+
+        }
+    }
+
+    private RayTraceResult rayTraceToTarget(Vector3d origin, Vector3d target) {
         return world.rayTraceBlocks(new RayTraceContext(origin, target, RayTraceContext.BlockMode.VISUAL,
                 RayTraceContext.FluidMode.NONE, null));
     }
@@ -535,8 +562,17 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         return pitch;
     }
 
-    public static Vector3d getHeadOffset(BlockPos pos) {
-        return new Vector3d(pos.getX() + .5, pos.getY() + .8125, pos.getZ() + .5);
+    private static Vector3d getHeadOffset(BlockPos pos) {
+        return new Vector3d(pos.getX() + .5, pos.getY() + .6875, pos.getZ() + .5);
+    }
+
+    private boolean isLoadedOnClient(BlockPos pos) {
+        if (world != null && pos != null) {
+            if (world.getBlockState(pos).getBlock().getRegistryName() != Blocks.VOID_AIR.getRegistryName()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -544,7 +580,12 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
         return INFINITE_EXTENT_AABB;
     }
 
-    private <E extends TileEntity & IAnimatable> PlayState predicate(AnimationEvent<E> event) {
+    @Override
+    public double getMaxRenderDistanceSquared() {
+        return Double.POSITIVE_INFINITY;
+    }
+
+    private <E extends AnimatedTileEntity> PlayState predicate(AnimationEvent<E> event) {
         AnimationBuilder animationBuilder = new AnimationBuilder();
         switch (getState()) {
             case IDLE:
@@ -555,16 +596,29 @@ public class LaserNodeTileEntity extends TileEntity implements ITickableTileEnti
                 animationBuilder.addAnimation(ROTATE_ANIMATION, true);
                 break;
             case PAIRED_RX:
+                if (partnerNodePos != null && !isLoadedOnClient(partnerNodePos)) {
+                    animationBuilder.addAnimation(FIRE_BEAM_REMOTE_ANIMATION, false);
+                    animationBuilder.addAnimation(RECEIVE_BEAM_ANIMATION, true);
+                } else {
+                    animationBuilder.addAnimation(ROTATE_ANIMATION, true);
+                }
+                break;
             case PAIRED_RX_OBSTRUCTED:
-                animationBuilder.addAnimation(ROTATE_ANIMATION, false);
-                animationBuilder.addAnimation(ROTATE_ANIMATION, true);
+                if (partnerNodePos != null && !isLoadedOnClient(partnerNodePos) && obstruction == null
+                        || (obstruction != null && isLoadedOnClient(obstruction))) {
+                    animationBuilder.addAnimation(FIRE_BEAM_REMOTE_ANIMATION, false);
+                    animationBuilder.addAnimation(RECEIVE_BEAM_ANIMATION, true);
+                } else {
+                    animationBuilder.addAnimation(ROTATE_ANIMATION, true);
+                }
                 break;
             case PAIRED_TX:
+                if (partnerNodePos != null)
+                    checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNodePos));
                 animationBuilder.addAnimation(FIRE_BEAM_ANIMATION, false);
                 animationBuilder.addAnimation(BEAM_ANIMATION, true);
                 break;
             case PAIRING:
-                // animationBuilder.addAnimation(LEAVE_IDLE_ANIMATION, false);
                 animationBuilder.addAnimation(PAIR_ANIMATION, true);
                 break;
 

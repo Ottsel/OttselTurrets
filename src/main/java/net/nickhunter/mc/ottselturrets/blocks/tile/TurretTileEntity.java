@@ -35,7 +35,7 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
 @SuppressWarnings("rawtypes")
-public abstract class TurretTileEntity extends TileEntity implements ITickableTileEntity, IAnimatable {
+public abstract class TurretTileEntity extends AnimatedTileEntity implements ITickableTileEntity {
 
     protected static final Vector3d targetOffset = new Vector3d(0, .75f, 0);
 
@@ -82,7 +82,7 @@ public abstract class TurretTileEntity extends TileEntity implements ITickableTi
         SCANNING, AIMING, FIRING
     }
 
-    public TurretTileEntity(TileEntityType<?> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
+    public TurretTileEntity(TileEntityType<? extends AnimatedTileEntity> tileEntityTypeIn, String idleAnimation, String aimingAnimation,
             String firingAnimation, String resetAnimation, SoundEvent chargingSound, SoundEvent firingSound,
             DamageSource damageSource, int range, int damage, double timeToCharge, double timeToCoolDown,
             float pitchMax, float headPitchMax) {

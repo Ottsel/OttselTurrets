@@ -6,7 +6,7 @@ import net.nickhunter.mc.ottselturrets.blocks.tile.TurretTileEntity;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.resource.GeckoLibCache;
 
-public abstract class TurretTileModel extends AnimatedGeoModel<TurretTileEntity> {
+public class TurretTileModel extends AnimatedGeoModel<TurretTileEntity> {
 
     public final String modelLocation;
     public final String textureLocation;

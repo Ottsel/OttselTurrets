@@ -20,6 +20,7 @@ public class LaserNodeTileModel extends AnimatedGeoModel<LaserNodeTileEntity> {
 
     @Override
     public void setLivingAnimations(LaserNodeTileEntity entity, Integer uniqueID) {
+
         pitch = entity.getPitchToTarget();
         yaw = entity.getYawToTarget();
 
@@ -31,6 +32,7 @@ public class LaserNodeTileModel extends AnimatedGeoModel<LaserNodeTileEntity> {
         GeckoLibCache.getInstance().parser.setValue("rotation_x_prev", rotationXPrev);
         GeckoLibCache.getInstance().parser.setValue("rotation_y_prev", rotationYPrev);
         GeckoLibCache.getInstance().parser.setValue("beam_length", entity.getBeamLength());
+        GeckoLibCache.getInstance().parser.setValue("beam_start", entity.getBeamStart());
 
         switch (entity.getState()) {
             case PAIRING:

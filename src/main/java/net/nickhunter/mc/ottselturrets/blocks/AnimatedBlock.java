@@ -11,6 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.IBlockReader;
+import net.nickhunter.mc.ottselturrets.blocks.tile.AnimatedTileEntity;
 import net.nickhunter.mc.ottselturrets.items.AnimatedBlockItem;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 
@@ -19,10 +20,10 @@ public class AnimatedBlock extends Block {
     private final VoxelShape hitboxAABB;
     private final String resourceName;
     private final AnimatedGeoModel<AnimatedBlockItem> itemModel;
-    private final AnimatedGeoModel tileModel;
+    private final AnimatedGeoModel<? extends AnimatedTileEntity> tileModel;
 
     public AnimatedBlock(Material material, String resourceName, AnimatedGeoModel<AnimatedBlockItem> itemModel,
-            AnimatedGeoModel tileModel, VoxelShape hitboxAABB) {
+            AnimatedGeoModel<? extends AnimatedTileEntity> tileModel, VoxelShape hitboxAABB) {
         super(Properties.create(material).notSolid());
         this.resourceName = resourceName;
         this.itemModel = itemModel;
@@ -38,7 +39,7 @@ public class AnimatedBlock extends Block {
         return itemModel;
     }
 
-    public AnimatedGeoModel getTileModel() {
+    public AnimatedGeoModel<? extends AnimatedTileEntity> getTileModel() {
         return tileModel;
     }
 

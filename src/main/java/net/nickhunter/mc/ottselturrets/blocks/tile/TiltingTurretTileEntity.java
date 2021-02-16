@@ -38,7 +38,7 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
     private TiltDirection localDirectionToTarget, tiltDirection;
     private boolean tilt;
 
-    public TiltingTurretTileEntity(TileEntityType<?> tileEntityType, String idleAnimation, String aimingAnimation,
+    public TiltingTurretTileEntity(TileEntityType<? extends AnimatedTileEntity> tileEntityType, String idleAnimation, String aimingAnimation,
             String firingAnimation, String resetAnimation, SoundEvent chargeSound, SoundEvent firingSound,
             DamageSource damageSource, int range, int damage, double timeToCharge, double timeToCoolDown,
             float pitchMax, float headPitchMax, float tiltPitchAmount) {

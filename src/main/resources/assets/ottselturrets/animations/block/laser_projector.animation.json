@@ -289,6 +289,115 @@
 					}
 				}
 			}
+		},
+		"animation.laser_projector.receive_beam": {
+			"loop": true,
+			"animation_length": 0.04,
+			"bones": {
+				"beam": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, "-(((beam_start+.2812)*16)-(((((beam_length)+.2812))*16)/2))"],
+							"easing": "easeInExpo"
+						},
+						"0.04": {
+							"vector": [0, 0, "-(((beam_start)*16)-(((((beam_length)+.2812))*16)/2))"],
+							"easing": "easeInExpo"
+						}
+					},
+					"scale": {
+						"0.0": {
+							"vector": [1, 1, "(beam_length+.2812)*16"],
+							"easing": "easeInExpo"
+						},
+						"0.04": {
+							"vector": [1, 1, "(beam_length+.2812)*16"],
+							"easing": "easeInExpo"
+						}
+					}
+				},
+				"arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, "rotation_y", 0],
+							"easing": "easeInElastic"
+						},
+						"0.04": {
+							"vector": [0, "rotation_y", 0],
+							"easing": "easeInElastic"
+						}
+					}
+				},
+				"elbow": {
+					"rotation": {
+						"0.0": {
+							"vector": ["rotation_x", 0, 0],
+							"easing": "easeInElastic"
+						},
+						"0.04": {
+							"vector": ["rotation_x", 0, 0],
+							"easing": "easeInElastic"
+						}
+					}
+				}
+			}
+		},
+		"animation.laser_projector.fire_beam_remote": {
+			"animation_length": 0.4,
+			"bones": {
+				"beam": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, "-((beam_start+.2812)*16)"]
+						},
+						"0.12": {
+							"vector": [0, 0, "-(((beam_start+.2812)*16)-(((((beam_length)+.2812))*8)))"],
+							"easing": "easeInExpo"
+						},
+						"0.4": {
+							"vector": [0, 0, "-(((beam_start+.2812)*16)-(((((beam_length)+.2812))*8)))"],
+							"easing": "easeInExpo"
+						}
+					},
+					"scale": {
+						"0.0": {
+							"vector": [1, 1, 0]
+						},
+						"0.12": {
+							"vector": [1, 1, "((beam_length)+.2812)*16"],
+							"easing": "easeInExpo"
+						},
+						"0.4": {
+							"vector": [1, 1, "(beam_length+.2812)*16"],
+							"easing": "easeInExpo"
+						}
+					}
+				},
+				"arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, "rotation_y", 0],
+							"easing": "easeInElastic"
+						},
+						"0.4": {
+							"vector": [0, "rotation_y", 0],
+							"easing": "easeInElastic"
+						}
+					}
+				},
+				"elbow": {
+					"rotation": {
+						"0.0": {
+							"vector": ["rotation_x", 0, 0],
+							"easing": "easeInElastic"
+						},
+						"0.4": {
+							"vector": ["rotation_x", 0, 0],
+							"easing": "easeInElastic"
+						}
+					}
+				}
+			}
 		}
 	}
 }
