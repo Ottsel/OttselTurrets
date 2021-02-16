@@ -201,6 +201,8 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
         }
     }
 
+    private boolean obstructed;
+
     private void serverTick() {
         if (partnerNodePos != null) {
             switch (world.getBlockState(pos).get(LaserNodeBlock.NODE_STATE)) {
@@ -217,6 +219,10 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
                 case IDLE:
                 case PAIRED_IDLE:
                 case PAIRED_TX:
+                    if (obstructed != checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNodePos))) {
+                        obstructed = !obstructed;
+                        updateServer();
+                    }
                 case PAIRING:
                 default:
                     break;
@@ -270,11 +276,18 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
                 break;
             case PAIRED_TX:
                 if (world.isBlockPowered(pos)) {
+                    NodeState state;
                     if (checkForObstruction(getHeadOffset(pos), getHeadOffset(partnerNodePos))) {
-                        setState(partnerNodePos, NodeState.PAIRED_RX_OBSTRUCTED);
+                        state = NodeState.PAIRED_RX_OBSTRUCTED;
                     } else {
-                        setState(partnerNodePos, NodeState.PAIRED_RX);
+                        state = NodeState.PAIRED_RX;
                     }
+                    if (world.getBlockState(partnerNodePos).get(LaserNodeBlock.NODE_STATE) != state) {
+                        setState(partnerNodePos, state);
+                        world.notifyNeighborsOfStateChange(partnerNodePos,
+                                world.getBlockState(partnerNodePos).getBlock());
+                    }
+
                 } else {
                     setState(NodeState.PAIRED_IDLE);
                     setState(partnerNodePos, NodeState.PAIRED_IDLE);
