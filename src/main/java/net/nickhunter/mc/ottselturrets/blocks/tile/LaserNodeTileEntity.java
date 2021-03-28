@@ -237,6 +237,7 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
             checkForObstruction(getHeadOffset(partnerNodePos), getHeadOffset(pos));
     }
 
+    @SuppressWarnings({ "deprecation" })
     private void updateServer() {
         if (partnerNodePos == null) {
             setState(NodeState.IDLE);
@@ -637,9 +638,10 @@ public class LaserNodeTileEntity extends AnimatedTileEntity implements ITickable
         return PlayState.CONTINUE;
     }
 
+    @SuppressWarnings({"unchecked"})
     @Override
     public void registerControllers(AnimationData animationData) {
-        AnimationController controller = new AnimationController(this, "controller", 0, this::predicate);
+        AnimationController<?> controller = new AnimationController(this, "controller", 0, this::predicate);
         animationData.addAnimationController(controller);
     }
 

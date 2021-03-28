@@ -47,6 +47,7 @@ public class LaserNodeBlock extends AnimatedBlock {
         return null;
     }
 
+    @SuppressWarnings({ "deprecation" })
     @Override
     public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,
             boolean isMoving) {

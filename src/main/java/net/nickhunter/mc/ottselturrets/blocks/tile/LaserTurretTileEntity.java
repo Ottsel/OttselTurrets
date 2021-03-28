@@ -1,15 +1,20 @@
 package net.nickhunter.mc.ottselturrets.blocks.tile;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
+import net.nickhunter.mc.ottselturrets.client.sounds.BeamSound;
 import net.nickhunter.mc.ottselturrets.registry.SoundRegistry;
 import net.nickhunter.mc.ottselturrets.registry.TileRegistry;
-import net.nickhunter.mc.ottselturrets.util.TurretDamageSource;
+import net.nickhunter.mc.ottselturrets.util.DamageSources;
+import net.nickhunter.mc.ottselturrets.util.IBeamEmitter;
+import net.nickhunter.mc.ottselturrets.util.TurretState;
 
-public class LaserTurretTileEntity extends TiltingTurretTileEntity {
+public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IBeamEmitter {
 
     public static final String IDLE_ANIMATION = "animation.turret_horizontal.scan";
     public static final String AIMING_ANIMATION = "animation.turret_horizontal.rotate_head";
@@ -19,7 +24,7 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
     public static final SoundEvent CHARGE_SOUND = SoundRegistry.LASER_CHARGE.getSound();
     public static final SoundEvent FIRING_SOUND = SoundRegistry.LASER_BOLT.getSound();
 
-    public static final DamageSource DAMAGE_SOURCE = TurretDamageSource.LASER_TURRET;
+    public static final DamageSource DAMAGE_SOURCE = DamageSources.LASER_TURRET;
 
     public static final int RANGE = 10;
     public static final int DAMAGE = 20;
@@ -28,14 +33,15 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
     public static final float PITCH_MAX = 45;
     public static final float HEAD_PITCH_MAX = 15;
 
-    public static final float TILT_PITCH_AMOUNT = 20;
+    public static final float TILT_PITCH_AMOUNT = 25;
 
     private float beamLength;
+    private BeamState beamState = BeamState.INACTIVE;
 
     public LaserTurretTileEntity() {
         super(TileRegistry.LASER_TURRET.get(), IDLE_ANIMATION, AIMING_ANIMATION, FIRING_ANIMATION, RESET_ANIMATION,
-                CHARGE_SOUND, FIRING_SOUND, DAMAGE_SOURCE, RANGE, DAMAGE, CHARGE_TIME, COOLDOWN_TIME, PITCH_MAX, HEAD_PITCH_MAX,
-                TILT_PITCH_AMOUNT);
+                CHARGE_SOUND, FIRING_SOUND, DAMAGE_SOURCE, RANGE, DAMAGE, CHARGE_TIME, COOLDOWN_TIME, PITCH_MAX,
+                HEAD_PITCH_MAX, TILT_PITCH_AMOUNT);
     }
 
     public float getBeamLength() {
@@ -46,6 +52,29 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
     protected void clientTrackTarget() {
         calculateBeamLength(getTarget().getPositionVec());
         super.clientTrackTarget();
+    }
+
+    @Override
+    public TurretState getState() {
+        TurretState turretState = super.getState();
+        switch (turretState) {
+            case AIMING:
+                beamState = BeamState.CHARGING;
+                break;
+            case FIRING:
+                beamState = BeamState.FIRING;
+                break;
+            case SCANNING:
+            default:
+                beamState = BeamState.INACTIVE;
+                break;
+        }
+        return turretState;
+    }
+
+    @Override
+    protected void playSoundEffect(SoundEvent soundEvent) {
+        Minecraft.getInstance().getSoundHandler().play(new BeamSound(SoundCategory.BLOCKS, this));
     }
 
     private void calculateBeamLength(Vector3d targetPos) {
@@ -63,5 +92,10 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity {
         } else if (result.getType() == RayTraceResult.Type.BLOCK) {
             beamLength = (float) posVec.distanceTo(result.getHitVec()) - .9f;
         }
+    }
+
+    @Override
+    public BeamState getBeamState() {
+        return beamState;
     }
 }

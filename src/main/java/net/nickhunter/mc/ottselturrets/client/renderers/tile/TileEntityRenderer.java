@@ -9,6 +9,7 @@ import net.nickhunter.mc.ottselturrets.blocks.tile.AnimatedTileEntity;
 import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
 
+@SuppressWarnings({ "unchecked" })
 public class TileEntityRenderer extends GeoBlockRenderer<AnimatedTileEntity> {
     public TileEntityRenderer(TileEntityRendererDispatcher rendererDispatcherIn,
             AnimatedGeoModel<? extends AnimatedTileEntity> model) {

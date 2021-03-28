@@ -31,11 +31,11 @@ public class TurretTileModel extends AnimatedGeoModel<TurretTileEntity> {
         pitch = entity.getPitchToTarget();
         yaw = entity.getYawToTarget();
         
-        this.headRotationXPrev = pitch;
+        this.headRotationXPrev = -pitch;
         this.headRotationYPrev = yaw;
 
         GeckoLibCache.getInstance().parser.setValue("head_rotation_y", yaw);
-        GeckoLibCache.getInstance().parser.setValue("head_rotation_x", pitch);
+        GeckoLibCache.getInstance().parser.setValue("head_rotation_x", -pitch);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x_prev", headRotationXPrev);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_y_prev", headRotationYPrev);
         GeckoLibCache.getInstance().parser.setValue("head_rotation_x_max", entity.getHeadPitchMax());

@@ -7,7 +7,7 @@
 
   "item.ottselturrets.laser_weapon": "Arm Cannon",
 
-  "entity.ottselturrets.laser_dart": "Laser Dart",
+  "death.attack.armCannon": "%1$s was blasted to bits by %2$s's arm cannon",
 
   "death.attack.laserTurret": "%1$s was cut in half by a laser turret",
   "death.attack.laserTurret.player": "%1$s was cut in half by a laser turret whilst fighting %2$s",

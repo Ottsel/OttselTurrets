@@ -9,7 +9,6 @@ import java.util.List;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
@@ -17,14 +16,13 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3i;
 import net.nickhunter.mc.ottselturrets.OttselTurrets;
 import net.nickhunter.mc.ottselturrets.blocks.TurretBlock;
 import net.nickhunter.mc.ottselturrets.util.TiltDirection;
+import net.nickhunter.mc.ottselturrets.util.TrigHelper;
 import net.nickhunter.mc.ottselturrets.util.TurretState;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -36,7 +34,6 @@ import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
 import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 
-@SuppressWarnings("rawtypes")
 public abstract class TurretTileEntity extends AnimatedTileEntity implements ITickableTileEntity {
 
     protected static final Vector3d targetOffset = new Vector3d(0, .75f, 0);
@@ -259,11 +256,8 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     // Facilitates firing the turret.
     protected void fireTurret(LivingEntity target) {
-
         setState(TurretState.FIRING);
         playSoundEffect(firingSound);
-
-        // Damage the target.
         target.attackEntityFrom(damageSource, damage);
     }
 
@@ -279,8 +273,9 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     protected void clientTrackTarget() {
         Vector3d targetPos = target.getPositionVec();
-        yawToTarget = calculateYaw(targetPos);
-        pitchToTarget = calculatePitch(targetPos);
+        yawToTarget = TrigHelper.calculateYaw(this.pos, targetPos) + getYawOffset();
+        pitchToTarget = TrigHelper.calculatePitch(this.pos, targetPos) + 90;
+        OttselTurrets.LOGGER.info(pitchToTarget);
     }
 
     protected final List<LivingEntity> getTargets() {
@@ -298,7 +293,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         entities.forEach((entity) -> {
 
             RayTraceResult result = rayTraceToTarget(entity.getPositionVec());
-            float pitch = calculatePitch(entity.getPositionVec());
+            float pitch = TrigHelper.calculatePitch(this.pos, entity.getPositionVec()) + 90;
 
             if (result.getType() == RayTraceResult.Type.BLOCK) {
                 validTargets.remove(entity);
@@ -370,20 +365,6 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         }
     }
 
-    private float calculateYaw(Vector3d target) {
-        Vector3d diffPos = new Vector3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
-        return (float) MathHelper.wrapDegrees(
-                MathHelper.atan2(-diffPos.z, -diffPos.x) * (double) (180F / (float) Math.PI) + getYawOffset());
-    }
-
-    private float calculatePitch(Vector3d target) {
-        Vector3d diffPos = new Vector3d(this.pos.getX() + .5f, this.pos.getY(), this.pos.getZ() + .5f).subtract(target);
-        double horizComponent = MathHelper.sqrt((diffPos.z * diffPos.z) + (diffPos.x * diffPos.x));
-        float pitch = (float) MathHelper
-                .wrapDegrees((MathHelper.atan2(-horizComponent, diffPos.y) * (double) (180F / (float) Math.PI) + 90));
-        return pitch;
-    }
-
     // Acts as a timer to determine if the turret is charged up and can fire.
     private void chargeTimer(LivingEntity target) {
         if (chargeCounter < timeToCharge * OttselTurrets.TICKS_PER_SECOND - 1) {
@@ -417,16 +398,8 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         }
     }
 
-    private void playSoundEffect(SoundEvent soundEvent) {
-        if (world == null)
-            return;
-        PlayerEntity player = world.getClosestPlayer(pos.getX(), pos.getY(), pos.getZ(), 64, true);
-        if (player == null)
-            return;
-        Vector3i playerPos = new Vector3i(player.getPosition().getX(), player.getPosition().getY(),
-                player.getPosition().getZ());
-        world.playSound(player, this.pos, soundEvent, SoundCategory.BLOCKS,
-                (float) (1 / Math.sqrt((this.pos.distanceSq(playerPos)))), 1);
+    protected void playSoundEffect(SoundEvent soundEvent) {
+        world.playSound(null, this.pos, soundEvent, SoundCategory.BLOCKS, .5f, 1);
     }
 
     private int getYawOffset() {
@@ -444,7 +417,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     }
 
     private <E extends TileEntity & IAnimatable> PlayState predicate(AnimationEvent<E> event) {
-        AnimationController controller = event.getController();
+        AnimationController<?> controller = event.getController();
         switch (controller.getName()) {
             case "leg_controller":
                 animateLegs(controller);
@@ -457,11 +430,11 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         }
     }
 
-    protected void animateLegs(AnimationController controller) {
+    protected void animateLegs(AnimationController<?> controller) {
 
     }
 
-    private void animateHead(AnimationController controller) {
+    private void animateHead(AnimationController<?> controller) {
         AnimationBuilder animationBuilder = new AnimationBuilder();
         switch (getState()) {
             case SCANNING:
@@ -503,22 +476,24 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
                         break;
                 }
                 break;
+            default:
+                break;
         }
         controller.setAnimation(animationBuilder);
     }
 
-    protected void scanningFromScanning(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void scanningFromScanning(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         animationBuilder.addAnimation(resetAnimation, false);
         animationBuilder.addAnimation(idleAnimation, true);
         lastTurretState = TurretState.SCANNING;
     }
 
-    protected void scanningFromAiming(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void scanningFromAiming(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         animationBuilder.addAnimation(idleAnimation, true);
         lastTurretState = TurretState.SCANNING;
     }
 
-    protected void scanningFromFiring(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void scanningFromFiring(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         if (controller.getAnimationState().equals(AnimationState.Stopped)) {
             animationBuilder.addAnimation(resetAnimation, false);
             animationBuilder.addAnimation(idleAnimation, true);
@@ -529,18 +504,18 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         }
     }
 
-    protected void aimingFromScanning(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void aimingFromScanning(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         animationBuilder.addAnimation(aimingAnimation, true);
         playSoundEffect(chargeSound);
         lastTurretState = TurretState.AIMING;
     }
 
-    protected void aimingFromAiming(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void aimingFromAiming(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         animationBuilder.addAnimation(aimingAnimation, true);
         lastTurretState = TurretState.AIMING;
     }
 
-    protected void aimingFromFiring(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void aimingFromFiring(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         if (controller.getAnimationState().equals(AnimationState.Stopped)) {
             animationBuilder.addAnimation(aimingAnimation, true);
             lastTurretState = TurretState.AIMING;
@@ -550,18 +525,18 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         }
     }
 
-    protected void firingFromScanning(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void firingFromScanning(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         OttselTurrets.LOGGER.error("Something is horribly wrong: Went from scanning to shooting.");
         lastTurretState = TurretState.SCANNING;
     }
 
-    protected void firingFromAiming(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void firingFromAiming(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         animationBuilder.addAnimation(firingAnimation, false);
         playSoundEffect(firingSound);
         lastTurretState = TurretState.FIRING;
     }
 
-    protected void firingFromFiring(AnimationController controller, AnimationBuilder animationBuilder) {
+    protected void firingFromFiring(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         animationBuilder.addAnimation(firingAnimation, false);
         lastTurretState = TurretState.FIRING;
     }
@@ -589,6 +564,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         lookingAtTarget = true;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public void registerControllers(AnimationData animationData) {
         AnimationController legController = new AnimationController(this, "leg_controller", 3, this::predicate);

@@ -2,10 +2,11 @@ package net.nickhunter.mc.ottselturrets.registry;
 
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.nickhunter.mc.ottselturrets.client.models.tile.BallistaTurretTileModel;
-import net.nickhunter.mc.ottselturrets.client.models.tile.LaserTurretTileModel;
 import net.nickhunter.mc.ottselturrets.client.models.tile.LaserNodeTileModel;
+import net.nickhunter.mc.ottselturrets.client.models.tile.LaserTurretTileModel;
 import net.nickhunter.mc.ottselturrets.client.renderers.tile.TileEntityRenderer;
 
+@SuppressWarnings({ "unchecked" })
 public class RendererRegistry {
         public static void init() {
 

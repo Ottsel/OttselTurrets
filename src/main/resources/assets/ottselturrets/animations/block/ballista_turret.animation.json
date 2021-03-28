@@ -5,13 +5,22 @@
 			"animation_length": 2.6,
 			"bones": {
 				"bolt": {
+					"rotation": {
+						"0.24": {
+							"vector": [0, 0, 0]
+						},
+						"2.6": {
+							"vector": ["((query.anim_time-.24)*9.8*16*.25)", 0, 0],
+							"easing": "linear"
+						}
+					},
 					"position": {
 						"0.16": {
 							"vector": [0, 0, 0]
 						},
 						"2.6": {
-							"vector": [0, "-(query.anim_time*9.8*16*.5)", "-30*16"],
-							"easing": "easeOutQuad"
+							"vector": [0, 0, "-30*16"],
+							"easing": "easeOutSine"
 						}
 					}
 				},
@@ -660,6 +669,22 @@
 						"2.48": {
 							"vector": [1, 1, 1],
 							"easing": "easeInElastic"
+						}
+					}
+				},
+				"bolt_container": {
+					"rotation": {
+						"vector": ["head_rotation_x", "head_rotation_y", 0]
+					}
+				},
+				"bolt_gravity": {
+					"position": {
+						"0.24": {
+							"vector": [0, 0, 0]
+						},
+						"2.6": {
+							"vector": [0, "-((query.anim_time-.24)*9.8*16*.5)", 0],
+							"easing": "linear"
 						}
 					}
 				}

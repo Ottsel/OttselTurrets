@@ -10,5 +10,17 @@
     "sounds": [
       "ottselturrets:laser_charge"
     ]
+  },
+  "laser_fire": {
+    "category":"player",
+    "sounds":[
+      "ottselturrets:laser_fire"
+    ]
+  },
+  "laser_sustain": {
+    "category":"player",
+    "sounds":[
+      "ottselturrets:laser_sustain"
+    ]
   }
 }

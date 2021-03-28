@@ -4,8 +4,8 @@ import net.nickhunter.mc.ottselturrets.client.models.item.LaserWeaponItemModel;
 import net.nickhunter.mc.ottselturrets.items.LaserWeaponItem;
 import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
 
-public class ItemRenderer extends GeoItemRenderer<LaserWeaponItem> {
-    public ItemRenderer() {
+public class LaserWeaponRenderer extends GeoItemRenderer<LaserWeaponItem> {
+    public LaserWeaponRenderer() {
         super(new LaserWeaponItemModel());
     }
     

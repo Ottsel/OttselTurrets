@@ -57,7 +57,7 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
         tilt = false;
 
         // Target is above.
-        if (pitchToTarget < -headPitchMax) {
+        if (pitchToTarget > headPitchMax) {
             tiltDirection = localDirectionToTarget.getOpposite();
             switch (tiltDirection) {
                 default:
@@ -65,20 +65,20 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
                 case EAST:
                 case SOUTH:
                 case WEST:
-                    setPitchToTarget(pitchToTarget += tiltPitchAmount);
+                    setPitchToTarget(pitchToTarget - tiltPitchAmount);
                     break;
                 case NORTHEAST:
                 case SOUTHEAST:
                 case SOUTHWEST:
                 case NORTHWEST:
-                    setPitchToTarget(pitchToTarget += (tiltPitchAmount + 15));
+                    setPitchToTarget(pitchToTarget - (tiltPitchAmount * 2));
                     break;
             }
             tilt = true;
         }
 
         // Target is below.
-        else if (pitchToTarget > headPitchMax) {
+        else if (pitchToTarget < -headPitchMax) {
             tiltDirection = localDirectionToTarget;
             switch (tiltDirection) {
                 default:
@@ -86,13 +86,13 @@ public class TiltingTurretTileEntity extends TurretTileEntity {
                 case EAST:
                 case SOUTH:
                 case WEST:
-                    setPitchToTarget(pitchToTarget -= tiltPitchAmount);
+                    setPitchToTarget(pitchToTarget + tiltPitchAmount);
                     break;
                 case NORTHEAST:
                 case SOUTHEAST:
                 case SOUTHWEST:
                 case NORTHWEST:
-                    setPitchToTarget(pitchToTarget -= (tiltPitchAmount + 15));
+                    setPitchToTarget(pitchToTarget + (tiltPitchAmount * 2));
                     break;
             }
             tilt = true;
