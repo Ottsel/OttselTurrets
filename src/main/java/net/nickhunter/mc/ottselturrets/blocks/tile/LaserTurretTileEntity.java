@@ -36,7 +36,9 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IB
     public static final float TILT_PITCH_AMOUNT = 25;
 
     private float beamLength;
+
     private BeamState beamState = BeamState.INACTIVE;
+    private BeamSound currentSound;
 
     public LaserTurretTileEntity() {
         super(TileRegistry.LASER_TURRET.get(), IDLE_ANIMATION, AIMING_ANIMATION, FIRING_ANIMATION, RESET_ANIMATION,
@@ -55,26 +57,51 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IB
     }
 
     @Override
+    public void clientTick() {
+        switch (getState()) {
+        case AIMING:
+        case FIRING:
+            if (currentSound == null || currentSound.isDonePlaying())
+                currentSound = playSoundEffect();
+            break;
+        case SCANNING:
+        default:
+            break;
+        }
+        super.clientTick();
+    }
+
+    @Override
     public TurretState getState() {
         TurretState turretState = super.getState();
         switch (turretState) {
-            case AIMING:
-                beamState = BeamState.CHARGING;
-                break;
-            case FIRING:
+        case AIMING:
+            if (getTarget() == null || !getTarget().isAlive()) {
                 beamState = BeamState.FIRING;
                 break;
-            case SCANNING:
-            default:
-                beamState = BeamState.INACTIVE;
-                break;
+            }
+            beamState = BeamState.CHARGING;
+            break;
+        case FIRING:
+            beamState = BeamState.FIRING;
+            break;
+        case SCANNING:
+        default:
+            beamState = BeamState.INACTIVE;
+            break;
         }
         return turretState;
     }
 
     @Override
     protected void playSoundEffect(SoundEvent soundEvent) {
-        Minecraft.getInstance().getSoundHandler().play(new BeamSound(SoundCategory.BLOCKS, this));
+        playSoundEffect();
+    }
+
+    protected BeamSound playSoundEffect() {
+        BeamSound sound = new BeamSound(SoundCategory.BLOCKS, this);
+        Minecraft.getInstance().getSoundHandler().play(sound);
+        return sound;
     }
 
     private void calculateBeamLength(Vector3d targetPos) {

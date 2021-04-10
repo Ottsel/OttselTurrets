@@ -128,6 +128,9 @@
 						}
 					}
 				}
+			},
+			"timeline": {
+				"1.0": ["firing_done"]
 			}
 		},
 		"animation.turret_horizontal.rotate_head": {

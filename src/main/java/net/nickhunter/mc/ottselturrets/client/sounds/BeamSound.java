@@ -28,22 +28,24 @@ public class BeamSound extends TickableSound {
 
     @Override
     public void tick() {
+        if (emitter instanceof TileEntity && ((TileEntity) emitter).isRemoved())
+            this.finishPlaying();
         if (volume < .1f)
             this.volume += .01f;
         switch (emitter.getBeamState()) {
-            case CHARGING:
-                this.pitch += .015f;
-                break;
-            case FIRING:
-                this.pitch = 0;
-                break;
-            case PAUSED:
-                this.volume = 0;
-                break;
-            case INACTIVE:
-            default:
-                this.finishPlaying();
-                break;
+        case CHARGING:
+            this.pitch += .015f;
+            break;
+        case FIRING:
+            this.pitch = 0;
+            break;
+        case PAUSED:
+            this.volume = 0;
+            break;
+        case INACTIVE:
+        default:
+            this.finishPlaying();
+            break;
         }
     }
 }

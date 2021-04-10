@@ -275,7 +275,6 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         Vector3d targetPos = target.getPositionVec();
         yawToTarget = TrigHelper.calculateYaw(this.pos, targetPos) + getYawOffset();
         pitchToTarget = TrigHelper.calculatePitch(this.pos, targetPos) + 90;
-        OttselTurrets.LOGGER.info(pitchToTarget);
     }
 
     protected final List<LivingEntity> getTargets() {
@@ -404,29 +403,29 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     private int getYawOffset() {
         switch (this.getBlockState().get(HORIZONTAL_FACING)) {
-            case NORTH:
-            default:
-                return 90;
-            case SOUTH:
-                return -90;
-            case EAST:
-                return 0;
-            case WEST:
-                return 180;
+        case NORTH:
+        default:
+            return 90;
+        case SOUTH:
+            return -90;
+        case EAST:
+            return 0;
+        case WEST:
+            return 180;
         }
     }
 
     private <E extends TileEntity & IAnimatable> PlayState predicate(AnimationEvent<E> event) {
         AnimationController<?> controller = event.getController();
         switch (controller.getName()) {
-            case "leg_controller":
-                animateLegs(controller);
-                return PlayState.CONTINUE;
-            case "head_controller":
-                animateHead(controller);
-                return PlayState.CONTINUE;
-            default:
-                return PlayState.CONTINUE;
+        case "leg_controller":
+            animateLegs(controller);
+            return PlayState.CONTINUE;
+        case "head_controller":
+            animateHead(controller);
+            return PlayState.CONTINUE;
+        default:
+            return PlayState.CONTINUE;
         }
     }
 
@@ -437,47 +436,47 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     private void animateHead(AnimationController<?> controller) {
         AnimationBuilder animationBuilder = new AnimationBuilder();
         switch (getState()) {
+        case SCANNING:
+            switch (lastTurretState) {
             case SCANNING:
-                switch (lastTurretState) {
-                    case SCANNING:
-                        scanningFromScanning(controller, animationBuilder);
-                        break;
-                    case AIMING:
-                        scanningFromAiming(controller, animationBuilder);
-                        break;
-                    case FIRING:
-                        scanningFromFiring(controller, animationBuilder);
-                        break;
-                }
+                scanningFromScanning(controller, animationBuilder);
                 break;
             case AIMING:
-                switch (lastTurretState) {
-                    case SCANNING:
-                        aimingFromScanning(controller, animationBuilder);
-                        break;
-                    case AIMING:
-                        aimingFromAiming(controller, animationBuilder);
-                        break;
-                    case FIRING:
-                        aimingFromFiring(controller, animationBuilder);
-                        break;
-                }
+                scanningFromAiming(controller, animationBuilder);
                 break;
             case FIRING:
-                switch (lastTurretState) {
-                    case SCANNING:
-                        firingFromScanning(controller, animationBuilder);
-                        break;
-                    case AIMING:
-                        firingFromAiming(controller, animationBuilder);
-                        break;
-                    case FIRING:
-                        firingFromFiring(controller, animationBuilder);
-                        break;
-                }
+                scanningFromFiring(controller, animationBuilder);
                 break;
-            default:
+            }
+            break;
+        case AIMING:
+            switch (lastTurretState) {
+            case SCANNING:
+                aimingFromScanning(controller, animationBuilder);
                 break;
+            case AIMING:
+                aimingFromAiming(controller, animationBuilder);
+                break;
+            case FIRING:
+                aimingFromFiring(controller, animationBuilder);
+                break;
+            }
+            break;
+        case FIRING:
+            switch (lastTurretState) {
+            case SCANNING:
+                firingFromScanning(controller, animationBuilder);
+                break;
+            case AIMING:
+                firingFromAiming(controller, animationBuilder);
+                break;
+            case FIRING:
+                firingFromFiring(controller, animationBuilder);
+                break;
+            }
+            break;
+        default:
+            break;
         }
         controller.setAnimation(animationBuilder);
     }
@@ -506,7 +505,6 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     protected void aimingFromScanning(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         animationBuilder.addAnimation(aimingAnimation, true);
-        playSoundEffect(chargeSound);
         lastTurretState = TurretState.AIMING;
     }
 
@@ -532,7 +530,6 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     protected void firingFromAiming(AnimationController<?> controller, AnimationBuilder animationBuilder) {
         animationBuilder.addAnimation(firingAnimation, false);
-        playSoundEffect(firingSound);
         lastTurretState = TurretState.FIRING;
     }
 

@@ -58,6 +58,9 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     public LaserWeaponItem(Properties properties) {
         super(properties.maxStackSize(1).setISTER(() -> LaserWeaponRenderer::new));
     }
+    public void setBeamState(BeamState beamState){
+        this.beamState = beamState;
+    }
 
     public float getBeamLength() {
         return beamLength;
@@ -68,7 +71,7 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
         if (worldIn.isRemote) {
             if (entityIn instanceof PlayerEntity) {
                 if (((PlayerEntity) entityIn).getHeldItemMainhand() != stack) {
-                    beamState = BeamState.INACTIVE;
+                    setBeamState(BeamState.INACTIVE);
                     AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory, stack,
                             CONTROLLER_NAME);
                     controller.setAnimation(new AnimationBuilder().addAnimation(IDLE_ANIM, true));
@@ -80,7 +83,7 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
 
     @Override
     public boolean onDroppedByPlayer(ItemStack item, PlayerEntity player) {
-        beamState = BeamState.INACTIVE;
+        setBeamState(BeamState.INACTIVE);
         return super.onDroppedByPlayer(item, player);
     }
 
@@ -90,7 +93,7 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
             return super.onItemRightClick(world, player, hand);
         player.setActiveHand(hand);
 
-        beamState = BeamState.FIRING;
+        setBeamState(BeamState.FIRING);
         if (world.isRemote) {
             Minecraft.getInstance().getSoundHandler().play(new BeamSound(SoundCategory.PLAYERS, this));
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory,
@@ -158,7 +161,7 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     @Override
     public void onPlayerStoppedUsing(ItemStack stack, World worldIn, LivingEntity entityLiving, int timeLeft) {
         if (worldIn.isRemote) {
-            beamState = BeamState.INACTIVE;
+            setBeamState(BeamState.INACTIVE);
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory, stack,
                     CONTROLLER_NAME);
             controller.setAnimation(new AnimationBuilder().addAnimation(BEAM_RETRACT_ANIM, false));
