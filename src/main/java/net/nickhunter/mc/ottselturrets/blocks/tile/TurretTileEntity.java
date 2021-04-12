@@ -217,7 +217,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     protected void targetsOnServer() {
         setState(TurretState.AIMING);
         if (coolDownTimer != -1) {
-            coolDownTimer();
+            coolDownTimer(true);
             return;
         }
         chargeTimer(target);
@@ -225,7 +225,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
 
     protected void noTargetsOnServer() {
         if (coolDownTimer != -1) {
-            coolDownTimer();
+            coolDownTimer(false);
         }
         if (chargeCounter != -1) {
             resetTimer();
@@ -247,11 +247,11 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         }
     }
 
-    protected void chargeComplete() {
+    protected void chargeComplete(boolean hasTarget) {
         // Fire the turret and start the cooldown.
         fireTurret(target);
         chargeSoundHasPlayed = false;
-        coolDownTimer();
+        coolDownTimer(hasTarget);
     }
 
     // Facilitates firing the turret.
@@ -261,9 +261,9 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         target.attackEntityFrom(damageSource, damage);
     }
 
-    protected void coolDownComplete() {
+    protected void coolDownComplete(boolean hasTarget) {
         chargeSoundHasPlayed = false;
-        setState(TurretState.SCANNING);
+        setState(hasTarget ? TurretState.AIMING : TurretState.SCANNING);
     }
 
     protected void resetComplete() {
@@ -370,18 +370,18 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
             chargingActions();
             chargeCounter++;
         } else {
-            chargeComplete();
+            chargeComplete(true);
             chargeCounter = -1;
 
         }
     }
 
     // Acts as a cool down timer for the turret
-    private void coolDownTimer() {
+    private void coolDownTimer(boolean hasTarget) {
         if (coolDownTimer < timeToCoolDown * OttselTurrets.TICKS_PER_SECOND - 1) { // If the turret is cooling down...
             coolDownTimer++;
         } else { // If the turret is done cooling down...
-            coolDownComplete();
+            coolDownComplete(hasTarget);
             coolDownTimer = -1;
         }
     }

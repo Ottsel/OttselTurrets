@@ -95,7 +95,7 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
 
         setBeamState(BeamState.FIRING);
         if (world.isRemote) {
-            Minecraft.getInstance().getSoundHandler().play(new BeamSound(SoundCategory.PLAYERS, this));
+            Minecraft.getInstance().getSoundHandler().play(new BeamSound(SoundCategory.PLAYERS, this, false));
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory,
                     player.getHeldItem(player.getActiveHand()), CONTROLLER_NAME);
             controller.markNeedsReload();

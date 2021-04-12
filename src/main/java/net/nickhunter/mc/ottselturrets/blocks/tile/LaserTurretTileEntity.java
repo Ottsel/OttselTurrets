@@ -1,6 +1,7 @@
 package net.nickhunter.mc.ottselturrets.blocks.tile;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
@@ -62,7 +63,7 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IB
         case AIMING:
         case FIRING:
             if (currentSound == null || currentSound.isDonePlaying())
-                currentSound = playSoundEffect();
+                currentSound = playSoundEffect(Minecraft.getInstance().player);
             break;
         case SCANNING:
         default:
@@ -95,11 +96,12 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IB
 
     @Override
     protected void playSoundEffect(SoundEvent soundEvent) {
-        playSoundEffect();
+        BeamSound sound = new BeamSound(SoundCategory.BLOCKS, this, true);
+        Minecraft.getInstance().getSoundHandler().play(sound);
     }
 
-    protected BeamSound playSoundEffect() {
-        BeamSound sound = new BeamSound(SoundCategory.BLOCKS, this);
+    protected BeamSound playSoundEffect(PlayerEntity player) {
+        BeamSound sound = new BeamSound(SoundCategory.BLOCKS, this, player, true);
         Minecraft.getInstance().getSoundHandler().play(sound);
         return sound;
     }
