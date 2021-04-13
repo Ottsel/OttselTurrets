@@ -7,7 +7,7 @@ import software.bernie.geckolib3.resource.GeckoLibCache;
 public class LaserTurretTileModel extends TurretTileModel {
 
     public static final String MODEL_LOCATION = "geo/block/turret_horizontal.geo.json";
-    public static final String TEXTURE_LOCATION = "textures/blocks/turret_horizontal.png";
+    public static final String TEXTURE_LOCATION = "textures/block/turret_horizontal.png";
     public static final String ANIMATION_LOCATION = "animations/block/turret.animation.json";
 
     public LaserTurretTileModel() {

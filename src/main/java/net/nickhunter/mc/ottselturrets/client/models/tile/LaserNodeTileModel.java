@@ -9,7 +9,7 @@ import software.bernie.geckolib3.resource.GeckoLibCache;
 public class LaserNodeTileModel extends AnimatedGeoModel<LaserNodeTileEntity> {
 
     public static final String MODEL_LOCATION = "geo/block/laser_projector.geo.json";
-    public static final String TEXTURE_LOCATION = "textures/blocks/turret_horizontal.png";
+    public static final String TEXTURE_LOCATION = "textures/block/turret_horizontal.png";
     public static final String ANIMATION_LOCATION = "animations/block/laser_projector.animation.json";
 
     private float pitch = 0;

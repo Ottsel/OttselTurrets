@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DND",
+    "NSN",
+    "DND"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:green_dye"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "result": {
+    "item": "ottselturrets:turret_core"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ND ",
+    "LTB",
+    "ND "
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:green_dye"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "L": {
+      "item": "ottselturrets:laser_diode"
+    },
+    "T": {
+      "item": "ottselturrets:turret_core"
+    },
+    "B": {
+      "item": "ottselturrets:battery"
+    }
+  },
+  "result": {
+    "item": "ottselturrets:laser_weapon"
+  }
+}

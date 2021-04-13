@@ -31,4 +31,12 @@ public class ItemRegistry {
         // Items
         public static final RegistryObject<Item> LASER_WEAPON = ITEMS.register(LaserWeaponItem.RESOURCE_NAME,
                         () -> new LaserWeaponItem(new Item.Properties().group(ItemGroupRegistry.MAIN)));
+        public static final RegistryObject<Item> LASER_DIODE = ITEMS.register("laser_diode",
+                        () -> new Item(new Item.Properties().group(ItemGroupRegistry.MAIN)));
+        public static final RegistryObject<Item> BATTERY = ITEMS.register("battery",
+                        () -> new Item(new Item.Properties().group(ItemGroupRegistry.MAIN)));
+        public static final RegistryObject<Item> MECHANICAL_LEGS = ITEMS.register("mechanical_legs",
+                        () -> new Item(new Item.Properties().group(ItemGroupRegistry.MAIN)));
+        public static final RegistryObject<Item> TURRET_CORE = ITEMS.register("turret_core",
+                        () -> new Item(new Item.Properties().group(ItemGroupRegistry.MAIN)));
 }

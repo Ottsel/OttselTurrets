@@ -14,7 +14,7 @@ public class LaserTurretItemModel extends AnimatedGeoModel<AnimatedBlockItem> {
 
     @Override
     public ResourceLocation getTextureLocation(AnimatedBlockItem turretBlockItem) {
-        return new ResourceLocation(OttselTurrets.MOD_ID, "textures/blocks/turret_horizontal.png");
+        return new ResourceLocation(OttselTurrets.MOD_ID, "textures/block/turret_horizontal.png");
     }
 
     @Override

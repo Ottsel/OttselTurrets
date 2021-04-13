@@ -6,6 +6,11 @@
   "block.ottselturrets.laser_node": "Laser Node",
 
   "item.ottselturrets.laser_weapon": "Arm Cannon",
+  "item.ottselturrets.laser_diode": "Laser Diode",
+  "item.ottselturrets.battery": "Battery",
+  
+  "item.ottselturrets.mechanical_legs": "Mechanical Legs",
+  "item.ottselturrets.turret_core": "Turret Core",
 
   "death.attack.armCannon": "%1$s was blasted to bits by %2$s's arm cannon",
 

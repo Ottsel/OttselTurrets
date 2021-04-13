@@ -14,7 +14,7 @@ public class BallistaTurretItemModel extends AnimatedGeoModel<AnimatedBlockItem>
 
     @Override
     public ResourceLocation getTextureLocation(AnimatedBlockItem tileEntity) {
-        return new ResourceLocation(OttselTurrets.MOD_ID, "textures/blocks/turret_ballista.png");
+        return new ResourceLocation(OttselTurrets.MOD_ID, "textures/block/turret_ballista.png");
     }
 
     @Override

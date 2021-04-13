@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shapeless",
+    "ingredients": [
+        {
+            "item": "ottselturrets:laser_diode"
+        },
+        {
+            "item": "ottselturrets:turret_core"
+        },
+        {
+            "item": "ottselturrets:mechanical_legs"
+        }
+    ],
+    "result": {
+        "item": "ottselturrets:laser_turret"
+    }
+}
