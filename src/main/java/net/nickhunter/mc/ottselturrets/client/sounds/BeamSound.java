@@ -2,6 +2,7 @@ package net.nickhunter.mc.ottselturrets.client.sounds;
 
 import net.minecraft.client.audio.TickableSound;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
@@ -20,10 +21,8 @@ public class BeamSound extends TickableSound {
 
     private boolean chargeStarted;
 
-    public BeamSound(SoundCategory category, IBeamEmitter emitter, boolean needsToCharge) {
-        this(category, emitter, null, needsToCharge);
-    }
-
+    private static BeamSound currentItemSound;
+    
     public BeamSound(SoundCategory category, IBeamEmitter emitter, PlayerEntity player, boolean needsToCharge) {
         super(SoundRegistry.LASER_SUSTAIN.getSound(), category);
         this.emitter = emitter;
@@ -41,13 +40,22 @@ public class BeamSound extends TickableSound {
             this.z = pos.getZ();
         }
         this.posWithOffset = new Vector3d(this.x + 0.5, this.y + 1, this.z + 0.5);
+
+        if (emitter instanceof Item) {
+            if (currentItemSound != null && player == currentItemSound.player && !currentItemSound.isDonePlaying()) {
+                currentItemSound.finishPlaying();
+            }
+            currentItemSound = this;
+        }
     }
 
     @Override
     public void tick() {
-        if (emitter instanceof TileEntity && ((TileEntity) emitter).isRemoved())
-            this.finishPlaying();
-        if (player != null) {
+        if (emitter instanceof TileEntity) {
+            if (((TileEntity) emitter).isRemoved()) {
+                this.finishPlaying();
+                return;
+            }
             double distance = player.getPositionVec().distanceTo(posWithOffset);
             this.volume = (float) (MAX_VOLUME / (distance + 1) - 0.006);
             if (volume < 0)

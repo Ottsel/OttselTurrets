@@ -58,7 +58,8 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     public LaserWeaponItem(Properties properties) {
         super(properties.maxStackSize(1).setISTER(() -> LaserWeaponRenderer::new));
     }
-    public void setBeamState(BeamState beamState){
+
+    public void setBeamState(BeamState beamState) {
         this.beamState = beamState;
     }
 
@@ -69,13 +70,13 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     @Override
     public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
         if (worldIn.isRemote) {
-            if (entityIn instanceof PlayerEntity) {
-                if (((PlayerEntity) entityIn).getHeldItemMainhand() != stack) {
-                    setBeamState(BeamState.INACTIVE);
-                    AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory, stack,
-                            CONTROLLER_NAME);
-                    controller.setAnimation(new AnimationBuilder().addAnimation(IDLE_ANIM, true));
-                }
+            PlayerEntity player = (PlayerEntity) entityIn;
+            if (!(player.getHeldItemMainhand().getItem() instanceof LaserWeaponItem))
+                setBeamState(BeamState.INACTIVE);
+            if ((player.getHeldItemMainhand()) != stack) {
+                AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory, stack,
+                        CONTROLLER_NAME);
+                controller.setAnimation(new AnimationBuilder().addAnimation(IDLE_ANIM, true));
             }
         }
         super.inventoryTick(stack, worldIn, entityIn, itemSlot, isSelected);
@@ -92,12 +93,11 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
         if (hand == Hand.OFF_HAND)
             return super.onItemRightClick(world, player, hand);
         player.setActiveHand(hand);
-
-        setBeamState(BeamState.FIRING);
         if (world.isRemote) {
-            Minecraft.getInstance().getSoundHandler().play(new BeamSound(SoundCategory.PLAYERS, this, false));
+            setBeamState(BeamState.FIRING);
+            Minecraft.getInstance().getSoundHandler().play(new BeamSound(SoundCategory.PLAYERS, this, player, false));
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory,
-                    player.getHeldItem(player.getActiveHand()), CONTROLLER_NAME);
+                    player.getHeldItem(hand), CONTROLLER_NAME);
             controller.markNeedsReload();
             controller.setAnimation(new AnimationBuilder().addAnimation(BEAM_FIRE_ANIM, false));
         }
@@ -165,7 +165,6 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory, stack,
                     CONTROLLER_NAME);
             controller.setAnimation(new AnimationBuilder().addAnimation(BEAM_RETRACT_ANIM, false));
-            controller.setAnimation(new AnimationBuilder().addAnimation(IDLE_ANIM, true));
         }
     }
 
@@ -211,6 +210,11 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     @Override
     public AnimationFactory getFactory() {
         return this.factory;
+    }
+
+    @Override
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return false;
     }
 
     @Override

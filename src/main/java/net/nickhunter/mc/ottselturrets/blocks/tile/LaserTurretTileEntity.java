@@ -96,8 +96,7 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IB
 
     @Override
     protected void playSoundEffect(SoundEvent soundEvent) {
-        BeamSound sound = new BeamSound(SoundCategory.BLOCKS, this, true);
-        Minecraft.getInstance().getSoundHandler().play(sound);
+        
     }
 
     protected BeamSound playSoundEffect(PlayerEntity player) {
