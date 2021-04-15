@@ -15,12 +15,11 @@ public class BeamParticle extends SpriteTexturedParticle {
     protected BeamParticle(ClientWorld world, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
         super(world, x, y, z, xSpeed, ySpeed, zSpeed);
         this.setSize(.02f, .02f);
-        this.motionX = xSpeed;
-        this.motionY = ySpeed;
-        this.motionZ = zSpeed;
-        this.particleScale *= .5f;
-        this.maxAge = (int) (50 * Math.random());
-
+        this.xd = xSpeed;
+        this.yd = ySpeed;
+        this.zd = zSpeed;
+        this.quadSize *= .5f;
+        this.lifetime = (int) (50 * Math.random());
     }
 
     @Override
@@ -37,10 +36,10 @@ public class BeamParticle extends SpriteTexturedParticle {
 
         @Nullable
         @Override
-        public Particle makeParticle(BasicParticleType typeIn, ClientWorld worldIn, double x, double y, double z,
+        public Particle createParticle(BasicParticleType typeIn, ClientWorld worldIn, double x, double y, double z,
                 double xSpeed, double ySpeed, double zSpeed) {
             BeamParticle beamParticle = new BeamParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed);
-            beamParticle.selectSpriteRandomly(this.spriteSet);
+            beamParticle.pickSprite(this.spriteSet);
             return beamParticle;
         }
     }

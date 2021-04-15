@@ -5,7 +5,7 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 
 public class DamageSources extends DamageSource {
-    public static final DamageSource LASER_TURRET = (new DamageSource("laserTurret").setFireDamage().setDamageBypassesArmor());
+    public static final DamageSource LASER_TURRET = (new DamageSource("laserTurret").setIsFire().bypassArmor());
     public static final DamageSource BALLISTA_TURRET = (new DamageSource("ballistaTurret").setProjectile());
 
     public DamageSources(String damageTypeIn) {

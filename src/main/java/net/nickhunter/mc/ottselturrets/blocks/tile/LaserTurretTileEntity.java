@@ -53,7 +53,7 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IB
 
     @Override
     protected void clientTrackTarget() {
-        calculateBeamLength(getTarget().getPositionVec());
+        calculateBeamLength(getTarget().position());
         super.clientTrackTarget();
     }
 
@@ -62,7 +62,7 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IB
         switch (getState()) {
         case AIMING:
         case FIRING:
-            if (currentSound == null || currentSound.isDonePlaying())
+            if (currentSound == null || currentSound.isStopped())
                 currentSound = playSoundEffect(Minecraft.getInstance().player);
             break;
         case SCANNING:
@@ -101,24 +101,24 @@ public class LaserTurretTileEntity extends TiltingTurretTileEntity implements IB
 
     protected BeamSound playSoundEffect(PlayerEntity player) {
         BeamSound sound = new BeamSound(SoundCategory.BLOCKS, this, player, true);
-        Minecraft.getInstance().getSoundHandler().play(sound);
+        Minecraft.getInstance().getSoundManager().play(sound);
         return sound;
     }
 
     private void calculateBeamLength(Vector3d targetPos) {
-        if (world == null)
+        if (level == null)
             return;
 
         Vector3d posOffset = getPosOffset();
-        Vector3d posVec = new Vector3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.y,
-                this.pos.getZ() + posOffset.z);
+        Vector3d posVec = new Vector3d(this.worldPosition.getX() + posOffset.x, this.worldPosition.getY() + posOffset.y,
+                this.worldPosition.getZ() + posOffset.z);
         Vector3d posDiff = (targetPos.add(targetOffset)).subtract(posVec);
-        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(posVec, posVec.add(posDiff.scale(RANGE)),
+        RayTraceResult result = level.clip(new RayTraceContext(posVec, posVec.add(posDiff.scale(RANGE)),
                 RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, null));
         if (result.getType() == RayTraceResult.Type.MISS) {
             beamLength = 256;
         } else if (result.getType() == RayTraceResult.Type.BLOCK) {
-            beamLength = (float) posVec.distanceTo(result.getHitVec()) - .9f;
+            beamLength = (float) posVec.distanceTo(result.getLocation()) - .9f;
         }
     }
 

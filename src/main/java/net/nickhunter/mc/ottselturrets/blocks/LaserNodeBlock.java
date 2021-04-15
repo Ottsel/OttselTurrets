@@ -30,17 +30,17 @@ public class LaserNodeBlock extends AnimatedBlock {
     public static final String RESOURCE_NAME = "laser_node";
     public static final AnimatedGeoModel<AnimatedBlockItem> ITEM_MODEL = new LaserNodeItemModel();
     public static final AnimatedGeoModel<LaserNodeTileEntity> TILE_MODEL = new LaserNodeTileModel();
-    public static final VoxelShape HITBOX_AABB = Block.makeCuboidShape(4D, 0D, 4D, 12D, 5D, 12D);
+    public static final VoxelShape HITBOX_AABB = Block.box(4D, 0D, 4D, 12D, 5D, 12D);
     public static final BooleanProperty RECEIVING_POWER = BooleanProperty.create("receiving_power");
     public static final EnumProperty<NodeState> NODE_STATE = EnumProperty.create("node_state", NodeState.class);
     public static final BooleanProperty OBSTRUCTED= BooleanProperty.create("obstructed");
 
     public LaserNodeBlock() {
-        super(Material.IRON, RESOURCE_NAME, ITEM_MODEL, TILE_MODEL, HITBOX_AABB);
+        super(Material.METAL, RESOURCE_NAME, ITEM_MODEL, TILE_MODEL, HITBOX_AABB);
     }
 
     private LaserNodeTileEntity getTileEntity(World world, BlockPos pos) {
-        TileEntity tileEntity = world.getTileEntity(pos);
+        TileEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity instanceof LaserNodeTileEntity) {
             return (LaserNodeTileEntity) tileEntity;
         }
@@ -51,8 +51,8 @@ public class LaserNodeBlock extends AnimatedBlock {
     @Override
     public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,
             boolean isMoving) {
-        boolean isPowered = worldIn.isBlockPowered(pos);
-        switch (worldIn.getBlockState(pos).get(NODE_STATE)) {
+        boolean isPowered = worldIn.hasNeighborSignal(pos);
+        switch (worldIn.getBlockState(pos).getValue(NODE_STATE)) {
             case PAIRED_IDLE:
             case PAIRED_TX:
                 break;
@@ -64,7 +64,7 @@ public class LaserNodeBlock extends AnimatedBlock {
                 isPowered = false;
                 break;
         }
-        worldIn.setBlockState(pos, worldIn.getBlockState(pos).with(RECEIVING_POWER, isPowered), 2);
+        worldIn.setBlock(pos, worldIn.getBlockState(pos).setValue(RECEIVING_POWER, isPowered), 2);
         LaserNodeTileEntity tileEntity = getTileEntity(worldIn, pos);
         if (tileEntity != null) {
             tileEntity.neighborUpdate();
@@ -75,9 +75,9 @@ public class LaserNodeBlock extends AnimatedBlock {
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context) {
         return super.getStateForPlacement(context)
-                .with(RECEIVING_POWER, context.getWorld().isBlockPowered(context.getPos()))
-                .with(NODE_STATE, NodeState.IDLE)
-                .with(OBSTRUCTED, false);
+                .setValue(RECEIVING_POWER, context.getLevel().hasNeighborSignal(context.getClickedPos()))
+                .setValue(NODE_STATE, NodeState.IDLE)
+                .setValue(OBSTRUCTED, false);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class LaserNodeBlock extends AnimatedBlock {
     }
 
     @Override
-    public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
+    public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player,
             Hand handIn, BlockRayTraceResult hit) {
         LaserNodeTileEntity tileEntity = getTileEntity(worldIn, pos);
         if (tileEntity != null)
@@ -99,25 +99,25 @@ public class LaserNodeBlock extends AnimatedBlock {
     }
 
     @Override
-    public void onBlockHarvested(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
-        super.onBlockHarvested(worldIn, pos, state, player);
+    public void playerWillDestroy(World worldIn, BlockPos pos, BlockState state, PlayerEntity player) {
+        super.playerWillDestroy(worldIn, pos, state, player);
         LaserNodeTileEntity tileEntity = getTileEntity(worldIn, pos);
         if (tileEntity != null)
             tileEntity.onBlockDestroyed();
     }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-        super.fillStateContainer(builder);
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(RECEIVING_POWER);
         builder.add(NODE_STATE);
         builder.add(OBSTRUCTED);
     }
 
     @Override
-    public int getWeakPower(BlockState blockState, IBlockReader blockAccess, BlockPos pos, Direction side) {
+    public int getSignal(BlockState blockState, IBlockReader blockAccess, BlockPos pos, Direction side) {
         boolean isPowered = false;
-        switch (blockState.get(NODE_STATE)) {
+        switch (blockState.getValue(NODE_STATE)) {
             case PAIRED_RX:
                 isPowered = true;
                 break;
@@ -134,7 +134,7 @@ public class LaserNodeBlock extends AnimatedBlock {
     }
 
     @Override
-    public boolean canProvidePower(BlockState state) {
+    public boolean isSignalSource(BlockState state) {
         return true;
     }
 

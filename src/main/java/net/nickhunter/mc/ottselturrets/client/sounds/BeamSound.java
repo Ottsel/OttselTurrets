@@ -26,15 +26,15 @@ public class BeamSound extends TickableSound {
     public BeamSound(SoundCategory category, IBeamEmitter emitter, PlayerEntity player, boolean needsToCharge) {
         super(SoundRegistry.LASER_SUSTAIN.getSound(), category);
         this.emitter = emitter;
-        this.repeat = true;
-        this.repeatDelay = 0;
+        this.looping = true;
+        this.delay = 0;
         this.volume = 0.00000001f;
         this.pitch = 1;
         this.player = player;
         this.needsToCharge = needsToCharge;
 
         if (category == SoundCategory.BLOCKS && emitter instanceof TileEntity) {
-            BlockPos pos = ((TileEntity) emitter).getPos();
+            BlockPos pos = ((TileEntity) emitter).getBlockPos();
             this.x = pos.getX();
             this.y = pos.getY();
             this.z = pos.getZ();
@@ -42,8 +42,8 @@ public class BeamSound extends TickableSound {
         this.posWithOffset = new Vector3d(this.x + 0.5, this.y + 1, this.z + 0.5);
 
         if (emitter instanceof Item) {
-            if (currentItemSound != null && player == currentItemSound.player && !currentItemSound.isDonePlaying()) {
-                currentItemSound.finishPlaying();
+            if (currentItemSound != null && player == currentItemSound.player && !currentItemSound.isStopped()) {
+                currentItemSound.stop();
             }
             currentItemSound = this;
         }
@@ -53,10 +53,10 @@ public class BeamSound extends TickableSound {
     public void tick() {
         if (emitter instanceof TileEntity) {
             if (((TileEntity) emitter).isRemoved()) {
-                this.finishPlaying();
+                this.stop();
                 return;
             }
-            double distance = player.getPositionVec().distanceTo(posWithOffset);
+            double distance = player.position().distanceTo(posWithOffset);
             this.volume = (float) (MAX_VOLUME / (distance + 1) - 0.006);
             if (volume < 0)
                 volume = 0;
@@ -80,7 +80,7 @@ public class BeamSound extends TickableSound {
             break;
         case INACTIVE:
         default:
-            this.finishPlaying();
+            this.stop();
             break;
         }
     }

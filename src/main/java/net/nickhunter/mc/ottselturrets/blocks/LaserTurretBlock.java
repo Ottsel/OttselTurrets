@@ -18,10 +18,10 @@ public class LaserTurretBlock extends TurretBlock {
     public static final String RESOURCE_NAME = "laser_turret";
     public static final AnimatedGeoModel<AnimatedBlockItem> ITEM_MODEL = new LaserTurretItemModel();
     public static final AnimatedGeoModel<TurretTileEntity> TILE_MODEL = new LaserTurretTileModel();
-    public static final VoxelShape HITBOX_AABB = Block.makeCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 10.0D, 14.0D);
+    public static final VoxelShape HITBOX_AABB = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 10.0D, 14.0D);
 
     public LaserTurretBlock() {
-        super(Material.IRON, RESOURCE_NAME, ITEM_MODEL, TILE_MODEL, HITBOX_AABB);
+        super(Material.METAL, RESOURCE_NAME, ITEM_MODEL, TILE_MODEL, HITBOX_AABB);
     }
 
     @Override

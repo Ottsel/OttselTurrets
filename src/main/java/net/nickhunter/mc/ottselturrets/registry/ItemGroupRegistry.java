@@ -9,7 +9,7 @@ public class ItemGroupRegistry {
     // Main item group
     public static final ItemGroup MAIN = new ItemGroup(OttselTurrets.MOD_ID) {
         @Override
-        public ItemStack createIcon() {
+        public ItemStack makeIcon() {
             return new ItemStack(ItemRegistry.LASER_TURRET.get());
         }
     };

@@ -52,6 +52,6 @@ public class OttselTurrets {
     @SuppressWarnings("resource")
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void particleRegistration(final ParticleFactoryRegisterEvent event) {
-       Minecraft.getInstance().particles.registerFactory(ParticleRegistry.BEAM_PARTICLE.get(), BeamParticle.Factory::new);
+       Minecraft.getInstance().particleEngine.register(ParticleRegistry.BEAM_PARTICLE.get(), BeamParticle.Factory::new);
     }
 }

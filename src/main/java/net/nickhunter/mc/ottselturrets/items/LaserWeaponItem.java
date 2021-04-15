@@ -56,7 +56,7 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     private static Vector3d localSpawnOffset = new Vector3d(0.5, -0.35, 0.1);
 
     public LaserWeaponItem(Properties properties) {
-        super(properties.maxStackSize(1).setISTER(() -> LaserWeaponRenderer::new));
+        super(properties.stacksTo(1).setISTER(() -> LaserWeaponRenderer::new));
     }
 
     public void setBeamState(BeamState beamState) {
@@ -69,11 +69,11 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
 
     @Override
     public void inventoryTick(ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected) {
-        if (worldIn.isRemote) {
+        if (worldIn.isClientSide) {
             PlayerEntity player = (PlayerEntity) entityIn;
-            if (!(player.getHeldItemMainhand().getItem() instanceof LaserWeaponItem))
+            if (!(player.getMainHandItem().getItem() instanceof LaserWeaponItem))
                 setBeamState(BeamState.INACTIVE);
-            if ((player.getHeldItemMainhand()) != stack) {
+            if ((player.getMainHandItem()) != stack) {
                 AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory, stack,
                         CONTROLLER_NAME);
                 controller.setAnimation(new AnimationBuilder().addAnimation(IDLE_ANIM, true));
@@ -89,20 +89,20 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
+    public ActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         if (hand == Hand.OFF_HAND)
-            return super.onItemRightClick(world, player, hand);
-        player.setActiveHand(hand);
-        if (world.isRemote) {
+            return super.use(world, player, hand);
+        player.startUsingItem(hand);
+        if (world.isClientSide) {
             setBeamState(BeamState.FIRING);
-            Minecraft.getInstance().getSoundHandler().play(new BeamSound(SoundCategory.PLAYERS, this, player, false));
+            Minecraft.getInstance().getSoundManager().play(new BeamSound(SoundCategory.PLAYERS, this, player, false));
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory,
-                    player.getHeldItem(hand), CONTROLLER_NAME);
+                    player.getItemInHand(hand), CONTROLLER_NAME);
             controller.markNeedsReload();
             controller.setAnimation(new AnimationBuilder().addAnimation(BEAM_FIRE_ANIM, false));
         }
 
-        return super.onItemRightClick(world, player, hand);
+        return super.use(world, player, hand);
     }
 
     @Override
@@ -117,40 +117,40 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
         float yawAdjust = -(TrigHelper.calculateYaw(localSpawnOffset, localTargetVec) - 90);
         float pitchAdjust = -(TrigHelper.calculatePitch(localSpawnOffset, localTargetVec) + 90);
 
-        if (entity.world.isRemote) {
+        if (entity.level.isClientSide) {
             GeckoLibCache geckoCache = GeckoLibCache.getInstance();
             geckoCache.parser.setValue("rotation_x", pitchAdjust);
             geckoCache.parser.setValue("rotation_y", yawAdjust);
 
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory,
-                    entity.getHeldItem(entity.getActiveHand()), CONTROLLER_NAME);
+                    entity.getItemInHand(entity.getUsedItemHand()), CONTROLLER_NAME);
             controller.setAnimation(new AnimationBuilder().addAnimation(BEAM_HOLD_ANIM, true));
 
         }
 
-        Vector3d aimVec = Vector3d.fromPitchYaw(entity.rotationPitch + pitchAdjust, entity.rotationYaw + yawAdjust)
+        Vector3d aimVec = Vector3d.directionFromRotation(entity.xRot + pitchAdjust, entity.yRot + yawAdjust)
                 .normalize();
 
         for (int i = 1; i < MathHelper.ceil(beamLength); i++) {
 
             Vector3d iSpawnPos = spawnPos.add(aimVec.scale(i + (Math.random()) - .3));
-            entity.world.addParticle(ParticleRegistry.BEAM_PARTICLE.get(), iSpawnPos.x + (0.3 * (Math.random() - .5f)),
+            entity.level.addParticle(ParticleRegistry.BEAM_PARTICLE.get(), iSpawnPos.x + (0.3 * (Math.random() - .5f)),
                     iSpawnPos.y + (0.3 * (Math.random() - .5f)) - .01, iSpawnPos.z + (0.3 * (Math.random() - .5f)),
                     (0.01 * (Math.random() - .5f)), (0.01 * (Math.random() - .5f)), (0.01 * (Math.random() - .5f)));
             if (hitVec != null) {
-                entity.world.addParticle(ParticleTypes.ASH, hitVec.x + (0.2 * (Math.random() - .5f)),
+                entity.level.addParticle(ParticleTypes.ASH, hitVec.x + (0.2 * (Math.random() - .5f)),
                         hitVec.y + (0.2 * (Math.random() - .5f)), hitVec.z + (0.2 * (Math.random() - .5f)), 0, 0, 0);
             }
 
-            if (!entity.world.isRemote) {
+            if (!entity.level.isClientSide) {
                 AxisAlignedBB boundingBox = new AxisAlignedBB(iSpawnPos.subtract(.5, .5, .5),
                         iSpawnPos.add(.5, .5, .5));
 
-                List<LivingEntity> entities = entity.world.getEntitiesWithinAABB(LivingEntity.class, boundingBox);
+                List<LivingEntity> entities = entity.level.getEntitiesOfClass(LivingEntity.class, boundingBox);
                 if (entities != null && !entities.isEmpty()) {
                     for (LivingEntity livingEntity : entities) {
                         if (livingEntity != entity)
-                            livingEntity.attackEntityFrom(DamageSources.causeArmCannonDamage(entity), 6);
+                            livingEntity.hurt(DamageSources.causeArmCannonDamage(entity), 6);
                     }
                 }
             }
@@ -159,8 +159,8 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     }
 
     @Override
-    public void onPlayerStoppedUsing(ItemStack stack, World worldIn, LivingEntity entityLiving, int timeLeft) {
-        if (worldIn.isRemote) {
+    public void releaseUsing(ItemStack stack, World worldIn, LivingEntity entityLiving, int timeLeft) {
+        if (worldIn.isClientSide) {
             setBeamState(BeamState.INACTIVE);
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory, stack,
                     CONTROLLER_NAME);
@@ -170,14 +170,14 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
 
     private Vector3d getTarget(LivingEntity entity) {
 
-        Vector3d posVec = entity.getPositionVec().add(0, entity.getEyeHeight(), 0);
-        Vector3d direction = entity.getLookVec();
+        Vector3d posVec = entity.position().add(0, entity.getEyeHeight(), 0);
+        Vector3d direction = entity.getLookAngle();
 
-        RayTraceResult result = entity.world.rayTraceBlocks(
+        RayTraceResult result = entity.level.clip(
                 new RayTraceContext(posVec, posVec.add(direction.scale(256)), BlockMode.VISUAL, FluidMode.NONE, null));
         if (result.getType() == RayTraceResult.Type.BLOCK) {
-            beamLength = (float) getSpawnPos(entity).distanceTo(result.getHitVec());
-            return result.getHitVec();
+            beamLength = (float) getSpawnPos(entity).distanceTo(result.getLocation());
+            return result.getLocation();
         } else {
             beamLength = BEAM_LENGTH_MAX;
             return null;
@@ -186,12 +186,12 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
 
     private static Vector3d getSpawnPos(LivingEntity entity) {
 
-        Vector3d spawnPos = entity.getPositionVec().add(0, entity.getEyeHeight(), 0);
+        Vector3d spawnPos = entity.position().add(0, entity.getEyeHeight(), 0);
 
         spawnPos = spawnPos
-                .add(Vector3d.fromPitchYaw(entity.rotationPitch - 90, entity.rotationYaw).scale(localSpawnOffset.y));
-        spawnPos = spawnPos.add(Vector3d.fromPitchYaw(0, entity.rotationYaw + 90).scale(localSpawnOffset.x));
-        spawnPos = spawnPos.add(entity.getLookVec().scale(localSpawnOffset.z));
+                .add(Vector3d.directionFromRotation(entity.xRot - 90, entity.yRot).scale(localSpawnOffset.y));
+        spawnPos = spawnPos.add(Vector3d.directionFromRotation(0, entity.yRot + 90).scale(localSpawnOffset.x));
+        spawnPos = spawnPos.add(entity.getLookAngle().scale(localSpawnOffset.z));
 
         return spawnPos;
     }
@@ -228,7 +228,7 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     }
 
     @Override
-    public boolean hasEffect(ItemStack stack) {
+    public boolean isFoil(ItemStack stack) {
         return false;
     }
 

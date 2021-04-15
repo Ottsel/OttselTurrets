@@ -24,7 +24,7 @@ public class AnimatedBlock extends Block {
 
     public AnimatedBlock(Material material, String resourceName, AnimatedGeoModel<AnimatedBlockItem> itemModel,
             AnimatedGeoModel<? extends AnimatedTileEntity> tileModel, VoxelShape hitboxAABB) {
-        super(Properties.create(material).notSolid());
+        super(Properties.of(material).noOcclusion());
         this.RESOURCE_NAME = resourceName;
         this.ITEM_MODEL = itemModel;
         this.TILE_MODEL = tileModel;
@@ -50,7 +50,7 @@ public class AnimatedBlock extends Block {
 
     @Nonnull
     @Override
-    public BlockRenderType getRenderType(@Nullable BlockState state) {
+    public BlockRenderType getRenderShape(@Nullable BlockState state) {
         return BlockRenderType.ENTITYBLOCK_ANIMATED;
     }
 

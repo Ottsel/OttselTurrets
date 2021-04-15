@@ -132,8 +132,8 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     }
 
     public TurretState getState() {
-        if (world != null) {
-            return world.getBlockState(pos).get(TurretBlock.TURRET_STATE);
+        if (level != null) {
+            return level.getBlockState(worldPosition).getValue(TurretBlock.TURRET_STATE);
         } else {
             return TurretState.SCANNING;
         }
@@ -144,12 +144,12 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     }
 
     public void setState(TurretState turretState) {
-        if (world != null) {
-            BlockState blockState = world.getBlockState(pos);
-            if (blockState.get(TurretBlock.TURRET_STATE) != turretState)
-                world.setBlockState(pos, blockState.with(TurretBlock.TURRET_STATE, turretState), 2);
+        if (level != null) {
+            BlockState blockState = level.getBlockState(worldPosition);
+            if (blockState.getValue(TurretBlock.TURRET_STATE) != turretState)
+                level.setBlock(worldPosition, blockState.setValue(TurretBlock.TURRET_STATE, turretState), 2);
         } else {
-            OttselTurrets.LOGGER.error(pos + " Failed to set turret state: " + turretState);
+            OttselTurrets.LOGGER.error(worldPosition + " Failed to set turret state: " + turretState);
         }
     }
 
@@ -180,7 +180,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     @Override
     public void tick() {
         commonTick();
-        if (world.isRemote) {
+        if (level.isClientSide) {
             clientTick();
         } else {
             serverTick();
@@ -258,7 +258,7 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     protected void fireTurret(LivingEntity target) {
         setState(TurretState.FIRING);
         playSoundEffect(firingSound);
-        target.attackEntityFrom(damageSource, damage);
+        target.hurt(damageSource, damage);
     }
 
     protected void coolDownComplete(boolean hasTarget) {
@@ -272,27 +272,27 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     }
 
     protected void clientTrackTarget() {
-        Vector3d targetPos = target.getPositionVec();
-        yawToTarget = TrigHelper.calculateYaw(this.pos, targetPos) + getYawOffset();
-        pitchToTarget = TrigHelper.calculatePitch(this.pos, targetPos) + 90;
+        Vector3d targetPos = target.position();
+        yawToTarget = TrigHelper.calculateYaw(this.worldPosition, targetPos) + getYawOffset();
+        pitchToTarget = TrigHelper.calculatePitch(this.worldPosition, targetPos) + 90;
     }
 
     protected final List<LivingEntity> getTargets() {
 
-        double x1 = this.pos.getX() - range;
-        double y1 = this.pos.getY() - range;
-        double z1 = this.pos.getZ() - range;
+        double x1 = this.worldPosition.getX() - range;
+        double y1 = this.worldPosition.getY() - range;
+        double z1 = this.worldPosition.getZ() - range;
         AxisAlignedBB area = new AxisAlignedBB(x1, y1, z1, x1 + range * 2, y1 + range * 2, z1 + range * 2);
 
         // Find entities around this tile entity.
         List<LivingEntity> entities = Collections.emptyList();
 
-        entities = world.getEntitiesWithinAABB(MobEntity.class, area);
+        entities = level.getEntitiesOfClass(MobEntity.class, area);
         List<LivingEntity> validTargets = new ArrayList<LivingEntity>(entities);
         entities.forEach((entity) -> {
 
-            RayTraceResult result = rayTraceToTarget(entity.getPositionVec());
-            float pitch = TrigHelper.calculatePitch(this.pos, entity.getPositionVec()) + 90;
+            RayTraceResult result = rayTraceToTarget(entity.position());
+            float pitch = TrigHelper.calculatePitch(this.worldPosition, entity.position()) + 90;
 
             if (result.getType() == RayTraceResult.Type.BLOCK) {
                 validTargets.remove(entity);
@@ -306,9 +306,9 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     }
 
     protected final RayTraceResult rayTraceToTarget(Vector3d target) {
-        Vector3d posVec = new Vector3d(this.pos.getX() + posOffset.x, this.pos.getY() + posOffset.y,
-                this.pos.getZ() + posOffset.z);
-        return world.rayTraceBlocks(new RayTraceContext(posVec, target.add(targetOffset),
+        Vector3d posVec = new Vector3d(this.worldPosition.getX() + posOffset.x, this.worldPosition.getY() + posOffset.y,
+                this.worldPosition.getZ() + posOffset.z);
+        return level.clip(new RayTraceContext(posVec, target.add(targetOffset),
                 RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, null));
     }
 
@@ -318,8 +318,8 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
         double shortestDist = range;
 
         for (LivingEntity entity : targets) {
-            Vector3d entityPos = entity.getPositionVec();
-            double dist = entityPos.distanceTo(new Vector3d(this.pos.getX(), this.pos.getY(), this.pos.getZ()));
+            Vector3d entityPos = entity.position();
+            double dist = entityPos.distanceTo(new Vector3d(this.worldPosition.getX(), this.worldPosition.getY(), this.worldPosition.getZ()));
             if (dist < shortestDist) {
                 shortestDist = dist;
                 closestTarget = entity;
@@ -398,11 +398,11 @@ public abstract class TurretTileEntity extends AnimatedTileEntity implements ITi
     }
 
     protected void playSoundEffect(SoundEvent soundEvent) {
-        world.playSound(null, this.pos, soundEvent, SoundCategory.BLOCKS, .5f, 1);
+        level.playSound(null, this.worldPosition, soundEvent, SoundCategory.BLOCKS, .5f, 1);
     }
 
     private int getYawOffset() {
-        switch (this.getBlockState().get(HORIZONTAL_FACING)) {
+        switch (this.getBlockState().getValue(HORIZONTAL_FACING)) {
         case NORTH:
         default:
             return 90;

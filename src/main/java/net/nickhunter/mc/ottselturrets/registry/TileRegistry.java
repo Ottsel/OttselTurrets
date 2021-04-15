@@ -24,17 +24,17 @@ public class TileRegistry {
         }
 
         public static final RegistryObject<TileEntityType<LaserTurretTileEntity>> LASER_TURRET = TILE_ENTITIES.register(
-                        LaserTurretBlock.RESOURCE_NAME, () -> TileEntityType.Builder.create(LaserTurretTileEntity::new,
+                        LaserTurretBlock.RESOURCE_NAME, () -> TileEntityType.Builder.of(LaserTurretTileEntity::new,
                                         new Block[] { BlockRegistry.LASER_TURRET.get() }).build(null));
         public static final RegistryObject<TileEntityType<BallistaTurretTileEntity>> BALLISTA_TURRET = TILE_ENTITIES
                         .register(BallistaTurretBlock.RESOURCE_NAME,
-                                        () -> TileEntityType.Builder.create(BallistaTurretTileEntity::new,
+                                        () -> TileEntityType.Builder.of(BallistaTurretTileEntity::new,
                                                         new Block[] { BlockRegistry.BALLISTA_TURRET.get() })
                                                         .build(null));
         public static final RegistryObject<TileEntityType<LaserNodeTileEntity>> LASER_NODE = TILE_ENTITIES
                         .register(LaserNodeBlock.RESOURCE_NAME,
                                         () -> TileEntityType.Builder
-                                                        .create(LaserNodeTileEntity::new,
+                                                        .of(LaserNodeTileEntity::new,
                                                                         new Block[] { BlockRegistry.LASER_NODE.get() })
                                                         .build(null));
 }

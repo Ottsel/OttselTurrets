@@ -17,12 +17,12 @@ public class AnimatedBlockItem extends BlockItem implements IAnimatable {
     public final AnimationFactory factory = new AnimationFactory(this);
 
     public AnimatedBlockItem(AnimatedBlock animatedBlock) {
-        super(animatedBlock, new Item.Properties().group(ItemGroupRegistry.MAIN)
+        super(animatedBlock, new Item.Properties().tab(ItemGroupRegistry.MAIN)
                 .setISTER(() -> () -> new BlockItemRenderer(animatedBlock.getItemModel())));
     }
 
     public AnimatedBlockItem(AnimatedHorizontalBlock animatedBlock) {
-        super(animatedBlock, new Item.Properties().group(ItemGroupRegistry.MAIN)
+        super(animatedBlock, new Item.Properties().tab(ItemGroupRegistry.MAIN)
                 .setISTER(() -> () -> new BlockItemRenderer(animatedBlock.getItemModel())));
     }
 

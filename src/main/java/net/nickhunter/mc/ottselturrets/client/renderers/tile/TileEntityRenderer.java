@@ -22,13 +22,13 @@ public class TileEntityRenderer extends GeoBlockRenderer<AnimatedTileEntity> {
             case NORTH:
                 break;
             case EAST:
-                stack.rotate(Vector3f.YN.rotationDegrees(90));
+                stack.mulPose(Vector3f.YN.rotationDegrees(90));
                 break;
             case SOUTH:
-                stack.rotate(Vector3f.YP.rotationDegrees(180));
+                stack.mulPose(Vector3f.YP.rotationDegrees(180));
                 break;
             case WEST:
-                stack.rotate(Vector3f.YP.rotationDegrees(90));
+                stack.mulPose(Vector3f.YP.rotationDegrees(90));
                 break;
             case DOWN:
                 break;

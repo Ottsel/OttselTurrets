@@ -18,7 +18,7 @@ public class BallistaTurretBlock extends TurretBlock {
     public static final String RESOURCE_NAME = "ballista_turret";
     public static final AnimatedGeoModel<AnimatedBlockItem> ITEM_MODEL = new BallistaTurretItemModel();
     public static final AnimatedGeoModel<TurretTileEntity> TILE_MODEL = new BallistaTurretTileModel();
-    public static final VoxelShape HITBOX_AABB = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 10.0D, 16.0D);
+    public static final VoxelShape HITBOX_AABB = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 10.0D, 16.0D);
 
     public BallistaTurretBlock() {
         super(Material.WOOD, RESOURCE_NAME, ITEM_MODEL, TILE_MODEL, HITBOX_AABB);

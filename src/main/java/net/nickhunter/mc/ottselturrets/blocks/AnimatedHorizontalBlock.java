@@ -29,7 +29,7 @@ public class AnimatedHorizontalBlock extends HorizontalBlock {
     public AnimatedHorizontalBlock(Material material, String resourceName,
             AnimatedGeoModel<AnimatedBlockItem> itemModel, AnimatedGeoModel<? extends AnimatedTileEntity> tileModel,
             VoxelShape hitboxAABB) {
-        super(Properties.create(material).notSolid());
+        super(Properties.of(material).noOcclusion());
         this.RESOURCE_NAME = resourceName;
         this.ITEM_MODEL = itemModel;
         this.TILE_MODEL = tileModel;
@@ -55,13 +55,13 @@ public class AnimatedHorizontalBlock extends HorizontalBlock {
 
     @Nonnull
     @Override
-    public BlockRenderType getRenderType(@Nullable BlockState state) {
+    public BlockRenderType getRenderShape(@Nullable BlockState state) {
         return BlockRenderType.ENTITYBLOCK_ANIMATED;
     }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-        builder.add(HORIZONTAL_FACING);
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+        builder.add(FACING);
     }
 
     @Nonnull
@@ -73,8 +73,8 @@ public class AnimatedHorizontalBlock extends HorizontalBlock {
     @Nonnull
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context) {
-        Direction direction = context.getPlayer() != null ? context.getPlayer().getHorizontalFacing() : Direction.NORTH;
-        return this.getDefaultState().with(HORIZONTAL_FACING, direction);
+        Direction direction = context.getPlayer() != null ? context.getPlayer().getDirection() : Direction.NORTH;
+        return this.defaultBlockState().setValue(FACING, direction);
     }
 
 }

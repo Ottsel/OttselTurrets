@@ -22,13 +22,13 @@ public class TurretBlock extends AnimatedHorizontalBlock {
     }
 
     @Override
-    protected void fillStateContainer(Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
         builder.add(TURRET_STATE);
-        super.fillStateContainer(builder);
+        super.createBlockStateDefinition(builder);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockItemUseContext context) {
-        return super.getStateForPlacement(context).with(TURRET_STATE, TurretState.SCANNING);
+        return super.getStateForPlacement(context).setValue(TURRET_STATE, TurretState.SCANNING);
     }
 }
