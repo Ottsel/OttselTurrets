@@ -9,6 +9,7 @@
         }
     ],
     "result": {
-        "item": "ottselturrets:laser_node"
+        "item": "ottselturrets:laser_node",
+        "count": 2
     }
 }
