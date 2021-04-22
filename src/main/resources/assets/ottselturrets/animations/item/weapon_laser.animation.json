@@ -22,7 +22,7 @@
 							"vector": [0, 0, 0]
 						},
 						"0.12": {
-							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.375)*16/2)"],
 							"easing": "easeInExpo"
 						}
 					},
@@ -31,7 +31,7 @@
 							"vector": [1, 1, 1]
 						},
 						"0.12": {
-							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"vector": [1, 1, "(laser_weapon_beam_length-.375)*16/2"],
 							"easing": "easeInExpo"
 						}
 					}
@@ -71,15 +71,15 @@
 							"vector": [0, 0, 0]
 						},
 						"0.12": {
-							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.375)*16/2)"],
 							"easing": "easeInExpo"
 						},
 						"0.4": {
-							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.375)*16/2)"],
 							"easing": "linear"
 						},
 						"0.52": {
-							"vector": [0, 0, "-((beam_length-.5)*16)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.5)*16)"],
 							"easing": "easeInExpo"
 						},
 						"0.56": {
@@ -93,11 +93,11 @@
 							"vector": [1, 1, 1]
 						},
 						"0.12": {
-							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"vector": [1, 1, "(laser_weapon_beam_length-.375)*16/2"],
 							"easing": "easeInExpo"
 						},
 						"0.4": {
-							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"vector": [1, 1, "(laser_weapon_beam_length-.375)*16/2"],
 							"easing": "linear"
 						},
 						"0.52": {
@@ -146,15 +146,15 @@
 							"vector": [0, 0, 0]
 						},
 						"0.12": {
-							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.375)*16/2)"],
 							"easing": "easeInExpo"
 						},
 						"0.4": {
-							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.375)*16/2)"],
 							"easing": "linear"
 						},
 						"0.52": {
-							"vector": [0, 0, "-((beam_length-.5)*16)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.5)*16)"],
 							"easing": "easeInExpo"
 						},
 						"0.56": {
@@ -168,11 +168,11 @@
 							"vector": [1, 1, 1]
 						},
 						"0.12": {
-							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"vector": [1, 1, "(laser_weapon_beam_length-.375)*16/2"],
 							"easing": "easeInExpo"
 						},
 						"0.4": {
-							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"vector": [1, 1, "(laser_weapon_beam_length-.375)*16/2"],
 							"easing": "linear"
 						},
 						"0.52": {
@@ -201,7 +201,7 @@
 							"vector": [0, 0, 0]
 						},
 						"0.12": {
-							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.375)*16/2)"],
 							"easing": "easeInExpo"
 						}
 					},
@@ -210,7 +210,7 @@
 							"vector": [1, 1, 1]
 						},
 						"0.12": {
-							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"vector": [1, 1, "(laser_weapon_beam_length-.375)*16/2"],
 							"easing": "easeInExpo"
 						}
 					}
@@ -247,28 +247,28 @@
 				"beam": {
 					"position": {
 						"0.0": {
-							"vector": [0, 0, "-((beam_length)*16/2)"]
+							"vector": [0, 0, "-((laser_weapon_beam_length)*16/2)"]
 						},
 						"0.04": {
-							"vector": [0, 0, "-((beam_length)*16/2)"]
+							"vector": [0, 0, "-((laser_weapon_beam_length)*16/2)"]
 						}
 					},
 					"scale": {
 						"0.0": {
-							"vector": [1, 1, "(beam_length)*16/2"]
+							"vector": [1, 1, "(laser_weapon_beam_length)*16/2"]
 						},
 						"0.04": {
-							"vector": [1.1, 1.1, "(beam_length)*16/2"]
+							"vector": [1.1, 1.1, "(laser_weapon_beam_length)*16/2"]
 						}
 					}
 				},
 				"gun": {
 					"rotation": {
 						"0.0": {
-							"vector": ["rotation_x", "rotation_y", 0]
+							"vector": ["laser_weapon_rotation_x", "laser_weapon_rotation_y", 0]
 						},
 						"0.04": {
-							"vector": ["rotation_x", "rotation_y", 0]
+							"vector": ["laser_weapon_rotation_x", "laser_weapon_rotation_y", 0]
 						}
 					}
 				},
@@ -306,11 +306,11 @@
 				"beam": {
 					"position": {
 						"0.0": {
-							"vector": [0, 0, "-((beam_length-.375)*16/2)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.375)*16/2)"],
 							"easing": "linear"
 						},
 						"0.04": {
-							"vector": [0, 0, "-((beam_length-.5)*16)"],
+							"vector": [0, 0, "-((laser_weapon_beam_length-.5)*16)"],
 							"easing": "easeInExpo"
 						},
 						"0.08": {
@@ -321,7 +321,7 @@
 					},
 					"scale": {
 						"0.0": {
-							"vector": [1, 1, "(beam_length-.375)*16/2"],
+							"vector": [1, 1, "(laser_weapon_beam_length-.375)*16/2"],
 							"easing": "linear"
 						},
 						"0.04": {

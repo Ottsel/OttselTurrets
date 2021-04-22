@@ -119,8 +119,8 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
 
         if (entity.level.isClientSide) {
             GeckoLibCache geckoCache = GeckoLibCache.getInstance();
-            geckoCache.parser.setValue("rotation_x", pitchAdjust);
-            geckoCache.parser.setValue("rotation_y", yawAdjust);
+            geckoCache.parser.setValue("laser_weapon_rotation_x", pitchAdjust);
+            geckoCache.parser.setValue("laser_weapon_rotation_y", yawAdjust);
 
             AnimationController<?> controller = GeckoLibUtil.getControllerForStack(this.factory,
                     entity.getItemInHand(entity.getUsedItemHand()), CONTROLLER_NAME);
@@ -197,7 +197,7 @@ public class LaserWeaponItem extends Item implements IBeamEmitter, IAnimatable {
     }
 
     private <P extends Item & IAnimatable> PlayState predicate(AnimationEvent<P> event) {
-        GeckoLibCache.getInstance().parser.setValue("beam_length", getBeamLength());
+        GeckoLibCache.getInstance().parser.setValue("laser_weapon_beam_length", getBeamLength());
         return PlayState.CONTINUE;
     }
 
